@@ -57,7 +57,9 @@ func TestFlat(t *testing.T) {
 			assert.Equal(t, cs.exp, r, fmt.Sprintf("in=%s", cs.in))
 		})
 	}
-	require.PanicsWithError(t, "unknown type (pfx=[]) int: 1", func() {
-		_ = flat(1)
+	t.Run("invalid_type", func(t *testing.T) {
+		require.PanicsWithError(t, "unknown type (pfx=[]) int: 1", func() {
+			_ = flat(1)
+		})
 	})
 }
