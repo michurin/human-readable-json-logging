@@ -37,13 +37,19 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 			}
 			if oneByteBuff[0] == '\n' {
 				if len(waste) != 0 { // NL appears right after valid JSON
-					_ = outStr([]Pair{{K: invalidLineKey, V: string(waste)}}) // TODO check err
+					err = outStr([]Pair{{K: invalidLineKey, V: string(waste)}})
+					if err != nil {
+						return err // TODO wrap
+					}
 					waste = waste[:0]
 				}
 			} else {
 				waste = append(waste, oneByteBuff[0])
 				if len(waste) >= maxData {
-					_ = outStr([]Pair{{K: invalidLineKey, V: string(waste)}}) // TODO check err; TODO check empty
+					err = outStr([]Pair{{K: invalidLineKey, V: string(waste)}})
+					if err != nil {
+						return err // TODO wrap
+					}
 					waste = waste[:0]
 				}
 			}

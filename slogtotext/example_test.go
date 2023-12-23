@@ -8,8 +8,9 @@ import (
 )
 
 func Example() {
-	f := slogtotext.Formatter(os.Stdout, `x={{.x}}{{if .UNKNOWN}} UNKNOWN:{{range .UNKNOWN | remove "p" "q"}} {{.K}}={{.V}}{{end}}{{end}}`)
-	g := slogtotext.Formatter(os.Stdout, `INVALID LINE: {{ .text | printf "%q" }}`)
+	// TODO show function rmByPfx
+	f := slogtotext.Formatter(os.Stdout, `x={{.x}}{{if .ALL | rm "x"}} UNKNOWN:{{range .ALL | rm "x" "p" "q"}} {{.K}}={{.V}}{{end}}{{end}}`+"\n")
+	g := slogtotext.Formatter(os.Stdout, `INVALID LINE: {{ .text | printf "%q" }}`+"\n")
 	buf := strings.NewReader(`
 {"x": 100}
 {"x": 1, "y": {
