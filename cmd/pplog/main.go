@@ -1,69 +1,133 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"flag"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"syscall"
+
+	"github.com/michurin/systemd-env-file/sdenv"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
+var debugFlag = false
+
+func init() {
+	flag.BoolVar(&debugFlag, "d", false, "debug mode")
+	flag.Parse()
+}
+
+func debug(m string) {
+	if debugFlag {
+		fmt.Println("DEBUG: " + m)
+	}
+}
+
+const configFile = "pplog.env"
+
+func lookupEnvFile() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		debug(err.Error())
+		return ""
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		debug(err.Error())
+		home = cwd
+	}
+	for {
+		fn := path.Join(cwd, configFile)
+		fi, err := os.Stat(fn)
+		if err != nil {
+			debug(err.Error())
+		}
+		if err == nil && fi.Mode()&fs.ModeType == 0 {
+			debug("file found: " + fn)
+			return fn
+		}
+		cwd = path.Dir(cwd)
+		if len(cwd) < len(home) {
+			break
+		}
+	}
+	debug("no configuration file has been found")
+	return ""
+}
+
+func normLine(t string) string {
+	return strings.ReplaceAll(strings.TrimSpace(t), "\\e", "\033") + "\n"
+}
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println(`Usage: pplog your_command arg arg arg...`)
+	if flag.NArg() < 2 {
+		fmt.Println(`Usage: pplog [-d] your_command arg arg arg...`)
 		return
 	}
-	args := os.Args[1:]
-	pplog := slogtotext.PPLog(
-		os.Stdout,
-		`{{. | invalid}}`,
-		`
-{{- if eq .type "I" }}`+"\033[92m"+`{{end -}}
-{{- if eq .type "E" }}`+"\033[1;33;41m"+`{{end -}}
-{{- .type -}}
-{{- if eq .type "I" }}`+"\033[0m"+`{{end}} {{.time | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`+"\033[0m"+
-			`{{if .run}} `+"\033[93m"+`{{.run | printf "%4.4s"}}`+"\033[0m"+`{{end}}`+
-			`{{if .comp}} `+"\033[92m"+`{{.comp}}`+"\033[0m"+`{{end}}`+
-			`{{if .scope}} `+"\033[32m"+`{{.scope}}`+"\033[0m"+`{{end}}`+
-			`{{if .ci_test_name}} `+"\033[35;44;1m"+`{{.ci_test_name}}`+"\033[0m"+`{{end}}`+
-			" \033[94m"+`{{.function}} {{.lineno}}`+"\033[39m"+
-			" \033[97m{{.message}}\033[0m"+
-			`{{range .UNKNOWN}} `+"\033[93m"+`{{.K}}`+"\033[39m"+`={{.V}}{{end}}`+"\033[0m",
-		map[string]any{
-			"_tracing":     map[string]any{"uber-trace-id": struct{}{}},
-			"ci_test_name": struct{}{},
-			"cluster_name": struct{}{},
-			"comp":         struct{}{},
-			"env":          struct{}{},
-			"function":     struct{}{},
-			"lineno":       struct{}{},
-			"message":      struct{}{},
-			"run":          struct{}{},
-			"scope":        struct{}{},
-			"tag":          struct{}{},
-			"time":         struct{}{},
-			"type":         struct{}{},
-			"xsource":      struct{}{},
-		},
-		map[string]any{
-			"invalid": func(x string) string {
-				i := strings.Index(x, "FAIL")
-				if i >= 0 {
-					x = x[:i] + "\033[41;93;1mFAIL\033[0m\033[97m" + x[i+4:]
-				}
-				return "\033[97m" + x + "\033[0m"
-			},
-		},
-		16384,
-	)
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stdout = pplog
-	cmd.Stderr = pplog
-	// signal.Ignore(syscall.SIGPIPE) // is it really needed?
-	err := cmd.Run()
+	args := flag.Args()[1:]
+	command := flag.Args()[0]
+
+	c := sdenv.NewCollectsion()
+	c.PushStd(os.Environ())
+	envFile := lookupEnvFile()
+	if envFile != "" {
+		b, err := os.ReadFile(envFile)
+		if err != nil {
+			panic(err) // TODO
+		}
+		pairs, err := sdenv.Parser(b)
+		if err != nil {
+			panic(err) // TODO
+		}
+		c.Push(pairs)
+	}
+
+	logLine := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}`
+	errLine := `INVALID JSON: {{ .text | printf "%q" }}`
+	for _, p := range c.Collection() {
+		switch p[0] {
+		case "PPLOG_LOGLINE":
+			logLine = p[1]
+		case "PPLOG_ERRLINE":
+			errLine = p[1]
+		}
+	}
+	logLine = normLine(logLine)
+	errLine = normLine(errLine)
+
+	ctx := context.Background()
+
+	errGrp, ctx := errgroup.WithContext(ctx)
+
+	rd, wr := io.Pipe()
+
+	f := slogtotext.Formatter(os.Stdout, logLine)
+	g := slogtotext.Formatter(os.Stdout, errLine)
+	errGrp.Go(func() error {
+		return slogtotext.Read(rd, f, g, 32768)
+	})
+
+	cmd := exec.CommandContext(ctx, command, args...)
+	cmd.Stdout = wr
+	cmd.Stderr = wr
+	debug("running: " + cmd.String())
+	errGrp.Go(func() error {
+		err := cmd.Run()
+		rd.Close()
+		return err
+	})
+
+	err := errGrp.Wait()
+	debug("running fin")
 	if err != nil {
 		printError(err)
 	}
@@ -74,7 +138,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
-func printError(err error) {
+func printError(err error) { // TODO reconsider
 	pe := new(os.PathError)
 	if errors.As(err, &pe) {
 		if pe.Err == syscall.EBADF { // fragile code; somehow syscall.Errno.Is doesn't recognize EBADF, so we unable to use errors.As
