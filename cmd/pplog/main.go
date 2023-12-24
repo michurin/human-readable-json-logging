@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime/debug"
 	"strings"
 	"syscall"
 
@@ -26,7 +27,7 @@ func init() {
 	flag.Parse()
 }
 
-func debug(m string) {
+func deb(m string) {
 	if debugFlag {
 		fmt.Println("DEBUG: " + m)
 	}
@@ -37,22 +38,22 @@ const configFile = "pplog.env"
 func lookupEnvFile() string {
 	cwd, err := os.Getwd()
 	if err != nil {
-		debug(err.Error())
+		deb(err.Error())
 		return ""
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		debug(err.Error())
+		deb(err.Error())
 		home = cwd
 	}
 	for {
 		fn := path.Join(cwd, configFile)
 		fi, err := os.Stat(fn)
 		if err != nil {
-			debug(err.Error())
+			deb(err.Error())
 		}
 		if err == nil && fi.Mode()&fs.ModeType == 0 {
-			debug("file found: " + fn)
+			deb("file found: " + fn)
 			return fn
 		}
 		cwd = path.Dir(cwd)
@@ -60,7 +61,7 @@ func lookupEnvFile() string {
 			break
 		}
 	}
-	debug("no configuration file has been found")
+	deb("no configuration file has been found")
 	return ""
 }
 
@@ -70,7 +71,13 @@ func normLine(t string) string {
 
 func main() {
 	if flag.NArg() < 2 {
-		fmt.Println(`Usage: pplog [-d] your_command arg arg arg...`)
+		bi, ok := debug.ReadBuildInfo()
+		if ok {
+			fmt.Println("Version:", bi.Main.Path, bi.Main.Version, bi.Main.Sum)
+		} else {
+			fmt.Println("Version unavailable")
+		}
+		fmt.Println("Usage: pplog [-d] your_command arg arg arg...")
 		return
 	}
 	args := flag.Args()[1:]
@@ -119,7 +126,7 @@ func main() {
 	cmd := exec.CommandContext(ctx, command, args...)
 	cmd.Stdout = wr
 	cmd.Stderr = wr
-	debug("running: " + cmd.String())
+	deb("running: " + cmd.String())
 	errGrp.Go(func() error {
 		err := cmd.Run()
 		rd.Close()
@@ -127,7 +134,7 @@ func main() {
 	})
 
 	err := errGrp.Wait()
-	debug("running fin")
+	deb("running fin")
 	if err != nil {
 		printError(err)
 	}
