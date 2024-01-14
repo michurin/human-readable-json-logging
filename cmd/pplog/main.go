@@ -20,10 +20,14 @@ import (
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
-var debugFlag = false
+var (
+	debugFlag       = false
+	showVersionFlag = false
+)
 
 func init() {
 	flag.BoolVar(&debugFlag, "d", false, "debug mode")
+	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
 	flag.Parse()
 }
 
@@ -69,15 +73,22 @@ func normLine(t string) string {
 	return strings.ReplaceAll(strings.TrimSpace(t), "\\e", "\033") + "\n"
 }
 
+func showBuildInfo() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("Cannot get build info")
+		return
+	}
+	fmt.Println(info.String())
+}
+
 func main() {
+	if showVersionFlag {
+		showBuildInfo()
+		return
+	}
 	if flag.NArg() < 2 {
-		bi, ok := debug.ReadBuildInfo()
-		if ok {
-			fmt.Println("Version:", bi.Main.Path, bi.Main.Version, bi.Main.Sum)
-		} else {
-			fmt.Println("Version unavailable")
-		}
-		fmt.Println("Usage: pplog [-d] your_command arg arg arg...")
+		fmt.Println("Usage: pplog [-d] [-v] your_command arg arg arg...")
 		return
 	}
 	args := flag.Args()[1:]

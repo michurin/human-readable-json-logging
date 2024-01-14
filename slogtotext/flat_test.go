@@ -20,16 +20,16 @@ func TestFlat(t *testing.T) {
 		exp: nil,
 	}, {
 		in:  `true`,
-		exp: []Pair{{"", "true"}},
+		exp: []Pair{{"NOKEY", "true"}},
 	}, {
 		in:  `false`,
-		exp: []Pair{{"", "false"}},
+		exp: []Pair{{"NOKEY", "false"}},
 	}, {
 		in:  `"x"`,
-		exp: []Pair{{"", "x"}},
+		exp: []Pair{{"NOKEY", "x"}},
 	}, {
 		in:  `1`,
-		exp: []Pair{{"", "1"}},
+		exp: []Pair{{"NOKEY", "1"}},
 	}, {
 		in:  `[]`,
 		exp: []Pair(nil),

@@ -26,11 +26,11 @@ func fill(m *[]Pair, pfx []string, d any) {
 		if x {
 			t = "true"
 		}
-		*m = append(*m, Pair{K: strings.Join(pfx, "."), V: t})
+		*m = append(*m, Pair{K: kjoin(pfx), V: t})
 	case string:
-		*m = append(*m, Pair{K: strings.Join(pfx, "."), V: x})
+		*m = append(*m, Pair{K: kjoin(pfx), V: x})
 	case json.Number:
-		*m = append(*m, Pair{K: strings.Join(pfx, "."), V: x.String()})
+		*m = append(*m, Pair{K: kjoin(pfx), V: x.String()})
 	case []any:
 		for i, v := range x {
 			fill(m, append(pfx, strconv.Itoa(i)), v)
@@ -52,9 +52,15 @@ func fill(m *[]Pair, pfx []string, d any) {
 	}
 }
 
+func kjoin(pfx []string) string {
+	if len(pfx) == 0 {
+		return "NOKEY" // in case the root element is not object or array
+	}
+	return strings.Join(pfx, ".")
+}
+
 func flat(d any) []Pair {
 	res := []Pair(nil)
-	pfx := []string(nil)
-	fill(&res, pfx, d)
+	fill(&res, nil, d)
 	return res
 }
