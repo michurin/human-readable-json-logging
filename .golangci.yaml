@@ -1,0 +1,51 @@
+linters:
+  enable-all: true
+  disable:
+      # deprecated
+    - deadcode
+    - exhaustivestruct
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck
+      # too hard
+    - varnamelen
+    - gomnd
+    - nlreturn
+    - testpackage
+    - depguard
+    - wsl
+      # would be nice to turn on
+    - wastedassign
+    - tparallel
+    - wrapcheck
+    - paralleltest
+    - goerr113
+    - godox
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/michurin/human-readable-json-logging)
+  lll: {line-length: 160}
+  cyclop: {max-complexity: 12}
+
+issues:
+  exclude-rules:
+    - path: cmd/pplog/main.go
+      linters:
+      - gochecknoglobals
+      - gochecknoinits
+      - forbidigo
+      - funlen
+      - dupword
+      - errorlint
+    - path: slogtotext/example_slog_test.go
+      linters:
+      - exhaustruct

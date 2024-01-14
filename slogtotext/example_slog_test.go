@@ -29,7 +29,7 @@ func tweakNowToMakeTestReproducible(_ []string, a slog.Attr) slog.Attr {
 }
 
 func Example_slog() {
-	templateForJsonLogRecords := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}` + "\n"
+	templateForJSONLogRecords := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}` + "\n"
 	templateForInvalidRecords := `INVALID JSON: {{ .text | printf "%q" }}` + "\n"
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -48,7 +48,7 @@ func Example_slog() {
 		defer cancel()
 		panicIfError(slogtotext.Read(
 			rd,
-			slogtotext.Formatter(os.Stdout, templateForJsonLogRecords),
+			slogtotext.Formatter(os.Stdout, templateForJSONLogRecords),
 			slogtotext.Formatter(os.Stdout, templateForInvalidRecords),
 			1024))
 	}()
@@ -58,7 +58,7 @@ func Example_slog() {
 	log.Info("Just log message")
 	log.Error("Some error message", "customKey", "customValue")
 
-	_, err = wr.Write([]byte("panic message\n")) // emulate wrong json in stream
+	_, err = wr.WriteString("panic message\n") // emulate wrong json in stream
 	panicIfError(err)
 
 	// output:

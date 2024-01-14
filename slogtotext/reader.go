@@ -35,7 +35,7 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 				return err
 			}
 		} else {
-			err := outStr([]Pair{{K: invalidLineKey, V: string(sc.Text())}})
+			err := outStr([]Pair{{K: invalidLineKey, V: sc.Text()}})
 			if err != nil {
 				return err
 			}

@@ -24,6 +24,7 @@ func collector(t *testing.T) (
 	func([]slogtotext.Pair) error,
 	func() string,
 ) {
+	t.Helper()
 	out := []string(nil)
 	f := func(p []slogtotext.Pair) error {
 		out = append(out, pairs(p))
