@@ -101,7 +101,6 @@ func Formatter(stream io.Writer, templateString string) func([]Pair) error {
 		kv["ALL"] = p
 		err := tm.Execute(stream, kv)
 		if err != nil {
-			panic(err) // TODO
 			return err // TODO wrap error?
 		}
 		return nil
