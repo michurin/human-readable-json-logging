@@ -96,7 +96,7 @@ This tool processes input stream line by line. It means, that it won't work with
 
 as well as it won't work with mixed lines like this:
 
-```json
+```
 Raw message{"message": "valid json log record"}
 ```
 
