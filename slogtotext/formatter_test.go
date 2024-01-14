@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/michurin/human-readable-json-logging/slogtotext"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
 func TestFormatter(t *testing.T) {
@@ -69,7 +70,8 @@ func TestFormatter(t *testing.T) {
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			f := slogtotext.FormatterMust(buf, cs.template)
-			f(cs.in)
+			err := f(cs.in)
+			require.NoError(t, err)
 			assert.Equal(t, cs.out, buf.String())
 		})
 	}
