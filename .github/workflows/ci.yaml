@@ -1,0 +1,39 @@
+---
+name: build # this string appears on badge
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go:
+          - "1.18"
+          - "1.19"
+          - "1.20"
+          - "1.21"
+    name: "Go ${{ matrix.go }} build and integration test"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "${{ matrix.go }}"
+      - run: "go version"
+      - run: "go build ./cmd/..."
+  test:
+    runs-on: ubuntu-latest
+    name: "Unit test and lint"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - uses: golangci/golangci-lint-action@v3
+        with:
+          version: "v1.55"
+      - run: "go test -v -race -coverprofile=coverage.txt -covermode=atomic ./..."
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.txt
+          verbose: true
