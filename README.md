@@ -71,7 +71,8 @@ I 07:33:44 5787 rpc.booking xxx.xx/service-booking/internal/rpc/booking.(*Handle
 
 ## TODO
 
-Add original line to set of template substitutions even if it has been parsed successfully.
+- Add original line to set of template substitutions even if it has been parsed successfully
+- Godoc
 
 ## Known issues
 

@@ -48,8 +48,8 @@ func Example_slog() {
 		defer cancel()
 		panicIfError(slogtotext.Read(
 			rd,
-			slogtotext.Formatter(os.Stdout, templateForJSONLogRecords),
-			slogtotext.Formatter(os.Stdout, templateForInvalidRecords),
+			slogtotext.FormatterMust(os.Stdout, templateForJSONLogRecords),
+			slogtotext.FormatterMust(os.Stdout, templateForInvalidRecords),
 			1024))
 	}()
 

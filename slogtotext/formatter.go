@@ -81,16 +81,14 @@ func tRemove(args ...any) []Pair {
 	return r
 }
 
-func Formatter(stream io.Writer, templateString string) func([]Pair) error {
+func Formatter(stream io.Writer, templateString string) (func([]Pair) error, error) {
 	tm, err := template.New("x").Option("missingkey=zero").Funcs(template.FuncMap{
 		"tmf":     tTimeFormatter,
 		"rm":      tRemove,
 		"rmByPfx": tRemoveByPfx,
 	}).Parse(templateString)
 	if err != nil {
-		return func([]Pair) error {
-			return err // TODO wrap?
-		}
+		return nil, err // TODO wrap?
 	}
 
 	return func(p []Pair) error {
@@ -104,5 +102,13 @@ func Formatter(stream io.Writer, templateString string) func([]Pair) error {
 			return err // TODO wrap error?
 		}
 		return nil
+	}, nil
+}
+
+func FormatterMust(stream io.Writer, templateString string) func([]Pair) error {
+	f, err := Formatter(stream, templateString)
+	if err != nil {
+		panic(err.Error()) // TODO wrap?
 	}
+	return f
 }
