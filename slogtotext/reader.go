@@ -5,9 +5,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"strings"
+	"unicode"
 )
 
-const invalidLineKey = "text"
+const (
+	invalidLineKey = "text"
+	binaryKey      = "binary"
+)
 
 func tryToParse(b []byte) (any, bool) {
 	if !json.Valid(b) {
@@ -35,7 +40,15 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 				return err
 			}
 		} else {
-			err := outStr([]Pair{{K: invalidLineKey, V: sc.Text()}})
+			s := sc.Text()
+			x := ""
+			if strings.ContainsFunc(s, unicode.IsControl) {
+				x = "yes"
+			}
+			err := outStr([]Pair{
+				{K: invalidLineKey, V: s},
+				{K: binaryKey, V: x},
+			})
 			if err != nil {
 				return err
 			}

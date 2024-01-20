@@ -32,9 +32,10 @@ func collector(t *testing.T) (
 	}
 	g := func(p []slogtotext.Pair) error {
 		t.Helper()
-		require.Len(t, p, 1)
+		require.Len(t, p, 2)
 		require.Equal(t, "text", p[0].K)
-		out = append(out, fmt.Sprintf("%q", p[0].V))
+		require.Equal(t, "binary", p[1].K)
+		out = append(out, fmt.Sprintf("%q (%q)", p[0].V, p[1].V))
 		return nil
 	}
 	c := func() string {
@@ -50,10 +51,11 @@ func TestReader(t *testing.T) {
 		in   string
 		exp  string
 	}{
-		{name: "empty", in: "", exp: ""},
-		{name: "nl", in: "\n\n", exp: `""|""`},
 		{name: "json", in: `{"a":1}`, exp: "a=1"},
-		{name: "invalid_json", in: `{"a":1}x`, exp: `"{\"a\":1}x"`}, // as is
+		{name: "empty", in: "", exp: ""},                                                                // has no effect
+		{name: "nl", in: "\n\n", exp: `"" ("")|"" ("")`},                                                // invalid json
+		{name: "invalid_json", in: `{"a":1}x`, exp: `"{\"a\":1}x" ("")`},                                // as is
+		{name: "invalid_json_with_ctrl", in: `{"a":1}` + "\033" + `x`, exp: `"{\"a\":1}\x1bx" ("yes")`}, // as is with label binary=yes
 	} {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
