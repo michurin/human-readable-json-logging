@@ -42,7 +42,7 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 		} else {
 			s := sc.Text()
 			x := ""
-			if strings.ContainsFunc(s, unicode.IsControl) {
+			if strings.IndexFunc(s, unicode.IsControl) >= 0 { // strings.ContainsFunc shows up in go go1.21
 				x = "yes"
 			}
 			err := outStr([]Pair{
