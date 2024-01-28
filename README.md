@@ -71,7 +71,7 @@ PPLOG_ERRLINE='{{ if .binary }}{{ .text }}{{ else }}\e[97m{{ .text }}\e[0m{{ end
 
 My original logs look like this:
 
-```
+```json
 {"type":"I","time":"2024-01-01T07:33:44Z","message":"RPC call","k8s_node":"ix-x-kub114","k8s_pod":"booking-v64-64cf64db6d-gm9pc","cluster_name":"zeta","env":"prod","tag":"service.booking","lineno":39,"function":"xxx.xx/service-booking/internal/rpc/booking.(*Handler).Handle.func1","run":"578710a04dbb","comp":"rpc.booking","payload_resp":"{\"provider\":\"None\"}","payload_req":"{\"userId\":34664834}","xsource":"profile","_tracing":{"uber-trace-id":"669f:6a2c:c35c:1"}}
 ```
 
@@ -81,9 +81,50 @@ It turns to:
 I 07:33:44 5787 rpc.booking xxx.xx/service-booking/internal/rpc/booking.(*Handler).Handle.func1 39 RPC call payload_req={"userId":34664834} payload_resp={"provider":"None"}
 ```
 
+## Step by step customization
+
+First things first, I recommend you to prepare small file with your logs. Let's name it `example.log`.
+
+Now you can start to play with it by command like that:
+
+```sh
+pplog cat example.log
+```
+
+You will see some formatted logs.
+
+Now create your first `pplog.env`. You can start from this universal one:
+
+```sh
+PPLOG_LOGLINE='{{range .ALL}}{{.K}}={{.V}} {{end}}'
+PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+```
+
+You will see all your logs in KEY=VALUE format. Now look over all your keys and choose one you want
+to see in the first place. Say, `message`. Modify your `pplog.env` this way:
+
+```sh
+PPLOG_LOGLINE='{{.message}}{{range .ALL | rm "message"}} {{.K}}={{.V}}{{end}}'
+PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+```
+
+You will see `message` in the first place and remove it from KEY=VALUE tail.
+
+Now, you are free to add colors:
+
+```sh
+PPLOG_LOGLINE='\e[32m{{.message}}\e[m{{range .ALL | rm "message"}} {{.K}}={{.V}}{{end}}'
+PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+```
+
+We makes `message` green. Keep shaping your logs field by field.
+
 ## TODO
 
 - Add original line to set of template substitutions even if it has been parsed successfully
+- Show templates in debug mode
+- Link to console control codes info
+- Write template functions guide
 - Godoc
 
 ## Known issues
