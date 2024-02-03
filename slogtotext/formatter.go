@@ -86,6 +86,8 @@ func Formatter(stream io.Writer, templateString string) (func([]Pair) error, err
 		"tmf":     tTimeFormatter,
 		"rm":      tRemove,
 		"rmByPfx": tRemoveByPfx,
+		"xjson":   tXJson,
+		"xxjson":  tXXJson,
 	}).Parse(templateString)
 	if err != nil {
 		return nil, err // TODO wrap?

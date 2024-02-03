@@ -119,12 +119,21 @@ PPLOG_ERRLINE='Invalid JONS: {{.text}}'
 
 We makes `message` green. Keep shaping your logs field by field.
 
+## Template functions
+
+- `tmf`
+- `rm`
+- `rmByPfx`
+- `xjson`
+- `xxjson` (experimental)
+
 ## TODO
 
 - Add original line to set of template substitutions even if it has been parsed successfully
 - Show templates in debug mode
 - Link to console control codes info
 - Write template functions guide
+- Readme: explain template functions. Show examples
 - Godoc
 
 ## Known issues
