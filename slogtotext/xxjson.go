@@ -89,7 +89,7 @@ type Colors struct {
 }
 
 var defaultColors = Colors{ //nolint:gochecknoglobals
-	KeyOpen:     []byte("\033[93;1m"),
+	KeyOpen:     []byte("\033[93m"),
 	KeyClose:    []byte("\033[0m"),
 	FalseOpen:   []byte("\033[91m"),
 	FalseClose:  []byte("\033[0m"),
