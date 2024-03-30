@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/michurin/systemd-env-file v0.0.0-20231028052257-4b4b4f2ede0e h1:GOHhRZpqZSz3L/wURt5doq/s8fNtztZZBSVo0Hy3qzs=
-github.com/michurin/systemd-env-file v0.0.0-20231028052257-4b4b4f2ede0e/go.mod h1:RVcoL6i1bfUtz3XK7NLCpeePKYq7UneaVb9hg1lsoUg=
+github.com/michurin/systemd-env-file v0.0.0-20240121081335-9bd5a321bf03 h1:D+D/2hqfOkxwpiglwHuU8EsJP9GetuIj/+dHQdLvB2g=
+github.com/michurin/systemd-env-file v0.0.0-20240121081335-9bd5a321bf03/go.mod h1:RVcoL6i1bfUtz3XK7NLCpeePKYq7UneaVb9hg1lsoUg=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
