@@ -33,8 +33,8 @@ func collector(t *testing.T) (
 	g := func(p []slogtotext.Pair) error {
 		t.Helper()
 		require.Len(t, p, 2)
-		require.Equal(t, "text", p[0].K)
-		require.Equal(t, "binary", p[1].K)
+		require.Equal(t, "TEXT", p[0].K)
+		require.Equal(t, "BINARY", p[1].K)
 		out = append(out, fmt.Sprintf("%q (%q)", p[0].V, p[1].V))
 		return nil
 	}
@@ -51,7 +51,7 @@ func TestReader(t *testing.T) {
 		in   string
 		exp  string
 	}{
-		{name: "json", in: `{"a":1}`, exp: "a=1"},
+		{name: "json", in: `{"a":1}`, exp: `a=1 RAW_INPUT={"a":1}`},
 		{name: "empty", in: "", exp: ""},                                                                // has no effect
 		{name: "nl", in: "\n\n", exp: `"" ("")|"" ("")`},                                                // invalid json
 		{name: "invalid_json", in: `{"a":1}x`, exp: `"{\"a\":1}x" ("")`},                                // as is

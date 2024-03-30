@@ -3,6 +3,7 @@ package slogtotext
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -98,7 +99,14 @@ func Formatter(stream io.Writer, templateString string) (func([]Pair) error, err
 		for _, v := range p {
 			kv[v.K] = v.V
 		}
-		kv["ALL"] = p
+		q := make([]Pair, 0, len(p))
+		for _, v := range p {
+			if v.K != rawInputKey {
+				q = append(q, v)
+			}
+		}
+		sort.Slice(q, func(i, j int) bool { return q[i].K < q[j].K })
+		kv[allKey] = q
 		err := tm.Execute(stream, kv)
 		if err != nil {
 			return err // TODO wrap error?

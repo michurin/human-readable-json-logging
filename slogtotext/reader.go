@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	invalidLineKey = "text"
-	binaryKey      = "binary"
+	allKey         = "ALL"
+	rawInputKey    = "RAW_INPUT"
+	invalidLineKey = "TEXT"
+	binaryKey      = "BINARY"
 )
 
 func tryToParse(b []byte) (any, bool) {
@@ -35,7 +37,9 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 	for sc.Scan() {
 		data, ok := tryToParse(sc.Bytes())
 		if ok {
-			err := out(flat(data))
+			rec := flat(data)
+			rec = append(rec, Pair{rawInputKey, sc.Text()})
+			err := out(rec)
 			if err != nil {
 				return err
 			}

@@ -30,7 +30,7 @@ func tweakNowToMakeTestReproducible(_ []string, a slog.Attr) slog.Attr {
 
 func Example_slog() {
 	templateForJSONLogRecords := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}` + "\n"
-	templateForInvalidRecords := `INVALID JSON: {{ .text | printf "%q" }}` + "\n"
+	templateForInvalidRecords := `INVALID JSON: {{ .TEXT | printf "%q" }}` + "\n"
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

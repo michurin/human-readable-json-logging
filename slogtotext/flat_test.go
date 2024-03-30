@@ -54,7 +54,7 @@ func TestFlat(t *testing.T) {
 			err := d.Decode(&x)
 			require.NoError(t, err)
 			r := flat(x)
-			assert.Equal(t, cs.exp, r, fmt.Sprintf("in=%s", cs.in))
+			assert.Equal(t, cs.exp, r, "in="+cs.in)
 		})
 	}
 	t.Run("invalid_type", func(t *testing.T) {

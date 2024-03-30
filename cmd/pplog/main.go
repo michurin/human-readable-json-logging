@@ -110,7 +110,7 @@ func main() {
 	}
 
 	logLine := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}`
-	errLine := `INVALID JSON: {{ .text | printf "%q" }}`
+	errLine := `INVALID JSON: {{ .TEXT | printf "%q" }}`
 	for _, p := range c.Collection() {
 		switch p[0] {
 		case "PPLOG_LOGLINE":
