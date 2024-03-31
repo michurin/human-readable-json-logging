@@ -23,7 +23,7 @@ func tTimeFormatter(from, to string, tm any) string {
 
 func tRemoveByPfx(args ...any) []Pair { // TODO naive nested loop implementation
 	nLast := len(args) - 1
-	if nLast < 0 {
+	if nLast <= 0 {
 		panic(fmt.Sprintf("Invalid number of args: %d: %v", len(args), args))
 	}
 	c := make([]string, nLast)
@@ -31,13 +31,13 @@ func tRemoveByPfx(args ...any) []Pair { // TODO naive nested loop implementation
 	for i := 0; i < nLast; i++ {
 		c[i], ok = args[i].(string)
 		if !ok {
-			panic(fmt.Sprintf("Invalid type: idx=%d: %[1]T: %[1]v", i, args[i]))
+			panic(fmt.Sprintf("Invalid type: idx=%[1]d: %[2]T: %[2]v", i, args[i]))
 		}
 	}
 	av := args[nLast]
 	a, ok := av.([]Pair)
 	if !ok {
-		panic(fmt.Sprintf("Invalid type: %[1]T: %[1]v", av))
+		panic(fmt.Sprintf("Invalid type: %[1]T: %[1]v: only .ALL allows", av))
 	}
 	r := []Pair(nil)
 	for _, x := range a {
@@ -57,21 +57,21 @@ func tRemoveByPfx(args ...any) []Pair { // TODO naive nested loop implementation
 
 func tRemove(args ...any) []Pair {
 	nLast := len(args) - 1
-	if nLast < 0 {
+	if nLast <= 0 {
 		panic(fmt.Sprintf("Invalid number of args: %d: %v", len(args), args))
 	}
 	c := make(map[string]struct{}, nLast)
 	for i := 0; i < nLast; i++ {
 		s, ok := args[i].(string)
 		if !ok {
-			panic(fmt.Sprintf("Invalid type: %[1]T: %[1]v", s))
+			panic(fmt.Sprintf("Invalid type: idx=%[1]d: %[2]T: %[2]v", i, args[i]))
 		}
 		c[s] = struct{}{}
 	}
 	av := args[nLast]
 	a, ok := av.([]Pair)
 	if !ok {
-		panic(fmt.Sprintf("Invalid type: %[1]T: %[1]v", av))
+		panic(fmt.Sprintf("Invalid type: %[1]T: %[1]v: only .ALL allows", av))
 	}
 	r := []Pair(nil)
 	for _, x := range a {

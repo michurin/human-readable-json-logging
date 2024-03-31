@@ -1,3 +1,4 @@
+//nolint:funlen // it's ok for tests
 package slogtotext_test
 
 import (
@@ -60,10 +61,22 @@ func TestFormatter(t *testing.T) {
 			out:      "AA=11;B=2;",
 		},
 		{
+			name:     "range_rm_multi",
+			template: `{{ range .ALL | rm "A" "B" }}{{.K}}={{.V}};{{end}}`,
+			in:       []slogtotext.Pair{{K: "A", V: "1"}, {K: "AA", V: "11"}, {K: "B", V: "2"}},
+			out:      "AA=11;",
+		},
+		{
 			name:     "range_rm_pfx",
 			template: `{{ range .ALL | rmByPfx "A" }}{{.K}}={{.V}};{{end}}`,
 			in:       []slogtotext.Pair{{K: "A", V: "1"}, {K: "AA", V: "11"}, {K: "B", V: "2"}},
 			out:      "B=2;",
+		},
+		{
+			name:     "range_rm_pfx_multi",
+			template: `{{ range .ALL | rmByPfx "A" "B" }}{{.K}}={{.V}};{{end}}`,
+			in:       []slogtotext.Pair{{K: "A", V: "1"}, {K: "AA", V: "11"}, {K: "B", V: "2"}, {K: "BB", V: "22"}, {K: "C", V: "3"}},
+			out:      "C=3;",
 		},
 	} {
 		cs := cs
@@ -73,6 +86,54 @@ func TestFormatter(t *testing.T) {
 			err := f(cs.in)
 			require.NoError(t, err)
 			assert.Equal(t, cs.out, buf.String())
+		})
+	}
+}
+
+func TestFormatterErrors(t *testing.T) {
+	for _, cs := range []struct {
+		name     string
+		template string
+		err      string
+	}{
+		{
+			name:     "range_rm_wrong_type",
+			template: `{{ range .ALL | rm "A" true }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:16: executing "x" at <rm "A" true>: error calling rm: Invalid type: idx=1: bool: true`,
+		},
+		{
+			name:     "range_rm_wrong_input_type",
+			template: `{{ range 1 | rm "A" }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:13: executing "x" at <rm "A">: error calling rm: Invalid type: int: 1: only .ALL allows`,
+		},
+		{
+			name:     "range_rm_noargs",
+			template: `{{ range .ALL | rm }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:16: executing "x" at <rm>: error calling rm: Invalid number of args: 1: [[]]`,
+		},
+		{
+			name:     "range_rm_pfx_wrong_type",
+			template: `{{ range .ALL | rmByPfx "A" true }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:16: executing "x" at <rmByPfx "A" true>: error calling rmByPfx: Invalid type: idx=1: bool: true`,
+		},
+		{
+			name:     "range_rm_pfx_wrong_input_type",
+			template: `{{ range 1 | rmByPfx "A" }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:13: executing "x" at <rmByPfx "A">: error calling rmByPfx: Invalid type: int: 1: only .ALL allows`,
+		},
+		{
+			name:     "range_rm_pfx_noargs",
+			template: `{{ range .ALL | rmByPfx }}{{.K}}={{.V}};{{end}}`,
+			err:      `template: x:1:16: executing "x" at <rmByPfx>: error calling rmByPfx: Invalid number of args: 1: [[]]`,
+		},
+	} {
+		cs := cs
+		t.Run(cs.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			f := slogtotext.FormatterMust(buf, cs.template)
+			err := f([]slogtotext.Pair{})
+			require.EqualError(t, err, cs.err)
+			assert.Empty(t, buf.String())
 		})
 	}
 }
