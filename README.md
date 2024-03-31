@@ -1,4 +1,4 @@
-# human-readable-json-logging
+# human-readable-json-logging (pplog)
 
 [![build](https://github.com/michurin/human-readable-json-logging/actions/workflows/ci.yaml/badge.svg)](https://github.com/michurin/human-readable-json-logging/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/michurin/human-readable-json-logging/graph/badge.svg?token=LDYMK3ZM06)](https://codecov.io/gh/michurin/human-readable-json-logging)
@@ -127,9 +127,32 @@ We makes `message` green. Keep shaping your logs field by field.
 - `xjson`
 - `xxjson` (experimental)
 
+## Template special variables
+
+- In `PPLOG_LOGLINE` template:
+    - `RAW_INPUT`
+    - `ALL` — list of all pairs key-value
+- In `PPLOG_ERRLINE` template:
+    - `TEXT`
+    - `BINARY` — does TEXT contains control characters
+
+## Most common colors
+
+```
+Text colors          Text High            Background           Hi Background         Decoration
+------------------   ------------------   ------------------   -------------------   --------------------
+\e[30mBlack  \e[0m   \e[90mBlack  \e[0m   \e[40mBlack  \e[0m   \e[100mBlack  \e[0m   \e[1mBold      \e[0m
+\e[31mRed    \e[0m   \e[91mRed    \e[0m   \e[41mRed    \e[0m   \e[101mRed    \e[0m   \e[4mUnderline \e[0m
+\e[32mGreen  \e[0m   \e[92mGreen  \e[0m   \e[42mGreen  \e[0m   \e[102mGreen  \e[0m   \e[7mReverse   \e[0m
+\e[33mYellow \e[0m   \e[93mYellow \e[0m   \e[43mYellow \e[0m   \e[103mYellow \e[0m
+\e[34mBlue   \e[0m   \e[94mBlue   \e[0m   \e[44mBlue   \e[0m   \e[104mBlue   \e[0m   Combinations
+\e[35mMagenta\e[0m   \e[95mMagenta\e[0m   \e[45mMagenta\e[0m   \e[105mMagenta\e[0m   -----------------------
+\e[36mCyan   \e[0m   \e[96mCyan   \e[0m   \e[46mCyan   \e[0m   \e[106mCyan   \e[0m   \e[1;4;103;31mWARN\e[0m
+\e[37mWhite  \e[0m   \e[97mWhite  \e[0m   \e[47mWhite  \e[0m   \e[107mWhite  \e[0m
+```
+
 ## TODO
 
-- Add original line to set of template substitutions even if it has been parsed successfully
 - Show templates in debug mode
 - Link to console control codes info
 - Write template functions guide
