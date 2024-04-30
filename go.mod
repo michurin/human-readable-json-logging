@@ -1,6 +1,6 @@
 module github.com/michurin/human-readable-json-logging
 
-go 1.20
+go 1.21
 
 require (
 	github.com/michurin/systemd-env-file v0.0.0-20240121081335-9bd5a321bf03
