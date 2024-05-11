@@ -48,8 +48,8 @@ func Example_slog() {
 		defer cancel()
 		panicIfError(slogtotext.Read(
 			rd,
-			slogtotext.FormatterMust(os.Stdout, templateForJSONLogRecords),
-			slogtotext.FormatterMust(os.Stdout, templateForInvalidRecords),
+			slogtotext.MustFormatter(os.Stdout, templateForJSONLogRecords),
+			slogtotext.MustFormatter(os.Stdout, templateForInvalidRecords),
 			1024))
 	}()
 
@@ -60,8 +60,7 @@ func Example_slog() {
 
 	_, err = wr.WriteString("panic message\n") // emulate wrong json in stream
 	panicIfError(err)
-
-	// output:
+	// Output:
 	// 1975-12-02T01:00:00Z [INFO] Just log message
 	// 1975-12-02T01:00:00Z [ERROR] Some error message customKey=customValue
 	// INVALID JSON: "panic message"

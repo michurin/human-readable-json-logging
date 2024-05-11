@@ -82,7 +82,7 @@ func TestFormatter(t *testing.T) {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
-			f := slogtotext.FormatterMust(buf, cs.template)
+			f := slogtotext.MustFormatter(buf, cs.template)
 			err := f(cs.in)
 			require.NoError(t, err)
 			assert.Equal(t, cs.out, buf.String())
@@ -130,7 +130,7 @@ func TestFormatterErrors(t *testing.T) {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
-			f := slogtotext.FormatterMust(buf, cs.template)
+			f := slogtotext.MustFormatter(buf, cs.template)
 			err := f([]slogtotext.Pair{})
 			require.EqualError(t, err, cs.err)
 			assert.Empty(t, buf.String())
@@ -140,6 +140,6 @@ func TestFormatterErrors(t *testing.T) {
 
 func TestFormatterInvalidTemplate(t *testing.T) {
 	require.Panics(t, func() {
-		slogtotext.FormatterMust(nil, "{{")
+		slogtotext.MustFormatter(nil, "{{")
 	})
 }

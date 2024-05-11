@@ -32,7 +32,7 @@ func (w *writer) wr(x ...[]byte) {
 	}
 }
 
-func marshal(x any, buf *writer, clr *Colors) { // ACHTUNG we do not care about looping
+func marshal(x any, buf *writer, clr *xxJSONColors) { // ACHTUNG we do not care about looping
 	switch q := x.(type) {
 	case map[string]any:
 		kk := make(kvSlice, 0, len(q))
@@ -73,7 +73,7 @@ func marshal(x any, buf *writer, clr *Colors) { // ACHTUNG we do not care about 
 	}
 }
 
-type Colors struct {
+type xxJSONColors struct {
 	KeyOpen     []byte
 	KeyClose    []byte
 	FalseOpen   []byte
@@ -88,7 +88,7 @@ type Colors struct {
 	NumberClose []byte
 }
 
-var defaultColors = Colors{ //nolint:gochecknoglobals
+var defaultColors = xxJSONColors{ //nolint:gochecknoglobals
 	KeyOpen:     []byte("\033[93m"),
 	KeyClose:    []byte("\033[0m"),
 	FalseOpen:   []byte("\033[91m"),

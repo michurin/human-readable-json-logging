@@ -115,7 +115,7 @@ func Formatter(stream io.Writer, templateString string) (func([]Pair) error, err
 	}, nil
 }
 
-func FormatterMust(stream io.Writer, templateString string) func([]Pair) error {
+func MustFormatter(stream io.Writer, templateString string) func([]Pair) error {
 	f, err := Formatter(stream, templateString)
 	if err != nil {
 		panic(err.Error()) // TODO wrap?

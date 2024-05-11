@@ -128,8 +128,8 @@ func main() {
 
 	rd, wr := io.Pipe()
 
-	f := slogtotext.FormatterMust(os.Stdout, logLine)
-	g := slogtotext.FormatterMust(os.Stdout, errLine)
+	f := slogtotext.MustFormatter(os.Stdout, logLine)
+	g := slogtotext.MustFormatter(os.Stdout, errLine)
 	errGrp.Go(func() error {
 		return slogtotext.Read(rd, f, g, 32768)
 	})
