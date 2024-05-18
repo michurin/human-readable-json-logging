@@ -1,4 +1,3 @@
-//nolint:cyclop // it's ok for parsers
 package slogtotext
 
 import (

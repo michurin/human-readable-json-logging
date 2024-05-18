@@ -39,44 +39,54 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 	bufEnd := 0
 	for {
 		n, err := input.Read(buf[bufEnd:])
-		if n == 0 && err != nil && bufEnd == 0 {
+		noMoreData := n == 0 && err != nil // it is the last data
+		if noMoreData && bufEnd == 0 {
 			// Read can return n > 0 and EOF, however it must return 0 and EOF next time
 			// And we give the split function a chance, like bufio.Scon does (check bufEnd == 0)
 			break
 		}
 		bufEnd += n
-		s := bytes.IndexByte(buf[:bufEnd], '\n')
-		if s < 0 { // consider full buffer
-			line = buf[:bufEnd]
-			buf = make([]byte, maxCap)
-			bufEnd = 0
-		} else {
-			line = buf[:s]
-			x := make([]byte, maxCap)
-			copy(x, buf[s+1:])
-			buf = x
-			bufEnd -= s + 1
+		for bufEnd > 0 {
+			s := bytes.IndexByte(buf[:bufEnd], '\n')
+			if s < 0 {
+				if bufEnd == maxCap || noMoreData { // consider full buffer
+					line = buf[:bufEnd]
+					buf = make([]byte, maxCap)
+					bufEnd = 0 // will cause end of iterations
+				} else {
+					break // the buffer is not full, however, it is not a complete line
+				}
+			} else {
+				line = buf[:s]
+				x := make([]byte, maxCap)
+				copy(x, buf[s+1:])
+				buf = x
+				bufEnd -= s + 1
+			}
+			data, ok := tryToParse(line)
+			if ok {
+				rec := flat(data)
+				rec = append(rec, Pair{rawInputKey, string(line)})
+				err := out(rec)
+				if err != nil {
+					return err
+				}
+			} else {
+				x := ""
+				if bytes.IndexFunc(line, unicode.IsControl) >= 0 { // bytes.ContainsFunc shows up in go go1.21
+					x = "yes"
+				}
+				err := outStr([]Pair{
+					{K: invalidLineKey, V: string(line)},
+					{K: binaryKey, V: x},
+				})
+				if err != nil {
+					return err
+				}
+			}
 		}
-		data, ok := tryToParse(line)
-		if ok {
-			rec := flat(data)
-			rec = append(rec, Pair{rawInputKey, string(line)})
-			err := out(rec)
-			if err != nil {
-				return err
-			}
-		} else {
-			x := ""
-			if bytes.IndexFunc(line, unicode.IsControl) >= 0 { // bytes.ContainsFunc shows up in go go1.21
-				x = "yes"
-			}
-			err := outStr([]Pair{
-				{K: invalidLineKey, V: string(line)},
-				{K: binaryKey, V: x},
-			})
-			if err != nil {
-				return err
-			}
+		if noMoreData {
+			break
 		}
 	}
 	return nil

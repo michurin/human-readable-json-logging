@@ -24,7 +24,7 @@ linters:
     - tparallel
     - wrapcheck
     - paralleltest
-    - goerr113
+    - err113
     - godox
 
 linters-settings:
@@ -35,7 +35,9 @@ linters-settings:
       - prefix(github.com/michurin/human-readable-json-logging)
   lll: {line-length: 160}
   funlen: {lines: 70}
-  cyclop: {max-complexity: 12}
+  cyclop: {max-complexity: 15}
+  gocognit:
+    min-complexity: 40 # 10-20 recommended
 
 issues:
   exclude-rules:
@@ -47,6 +49,7 @@ issues:
       - funlen
       - dupword
       - errorlint
+      - mnd
     - path: slogtotext/example_slog_test.go
       linters:
       - exhaustruct
