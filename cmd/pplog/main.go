@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"runtime/debug"
 	"strings"
@@ -137,6 +138,16 @@ func main() {
 	cmd := exec.CommandContext(ctx, command, args...)
 	cmd.Stdout = wr
 	cmd.Stderr = wr
+
+	propagateSigInt := make(chan os.Signal, 1)
+	signal.Notify(propagateSigInt, os.Interrupt, syscall.SIGTERM)
+	errGrp.Go(func() error {
+		sig := <-propagateSigInt
+		deb("propagating signal: " + sig.String())
+		_ = cmd.Process.Signal(sig)
+		return nil
+	})
+
 	deb("running: " + cmd.String())
 	errGrp.Go(func() error {
 		err := cmd.Run()
