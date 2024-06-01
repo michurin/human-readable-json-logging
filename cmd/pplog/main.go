@@ -87,7 +87,7 @@ func main() {
 		showBuildInfo()
 		return
 	}
-	if flag.NArg() < 2 {
+	if flag.NArg() < 1 {
 		fmt.Println("Usage: pplog [-d] [-v] your_command arg arg arg...")
 		return
 	}
