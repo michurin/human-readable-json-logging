@@ -9,13 +9,14 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"runtime/debug"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/michurin/systemd-env-file/sdenv"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
@@ -124,31 +125,55 @@ func main() {
 
 	ctx := context.Background()
 
-	errGrp, ctx := errgroup.WithContext(ctx)
-
 	rd, wr := io.Pipe()
-
-	f := slogtotext.MustFormatter(os.Stdout, logLine)
-	g := slogtotext.MustFormatter(os.Stdout, errLine)
-	errGrp.Go(func() error {
-		return slogtotext.Read(rd, f, g, 32768)
-	})
 
 	cmd := exec.CommandContext(ctx, command, args...)
 	cmd.Stdout = wr
 	cmd.Stderr = wr
 	deb("running: " + cmd.String())
-	errGrp.Go(func() error {
+	go func() {
 		err := cmd.Run()
+		deb("subprocess is finished")
 		rd.Close()
-		return err
-	})
+		deb("reader is closed")
+		if err != nil {
+			printError(err)
+		}
+	}()
 
-	err := errGrp.Wait()
-	deb("running fin")
+	catchSigChld := make(chan os.Signal, 1)
+	signal.Notify(catchSigChld, syscall.SIGCHLD)
+	go func() {
+		sig := <-catchSigChld
+		deb("catch signal: " + sig.String())
+		time.Sleep(time.Second) // we give a second to collect the last data; this signal obtaining from group, nor from direct child
+		rd.Close()
+	}()
+
+	propagateSigInt := make(chan os.Signal, 1)
+	signal.Notify(propagateSigInt, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		sig := <-propagateSigInt
+		deb("propagating signal: " + sig.String())
+		err := cmd.Process.Signal(sig)
+		if err != nil {
+			printError(err)
+		}
+		time.Sleep(time.Second)
+		sig = <-propagateSigInt
+		deb("second signal: " + sig.String())
+		rd.Close()
+	}()
+
+	f := slogtotext.MustFormatter(os.Stdout, logLine)
+	g := slogtotext.MustFormatter(os.Stdout, errLine)
+	deb("reader started")
+	err := slogtotext.Read(rd, f, g, 32768) // it will last until reader is opened
 	if err != nil {
 		printError(err)
 	}
+	deb("reader finished")
+
 	exitCode := cmd.ProcessState.ExitCode() // exit code can be set even if error
 	if exitCode < 0 {
 		exitCode = 1
