@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: "Go ${{ matrix.go }} build and behavioral tests"
     strategy:
       matrix:
         go:
@@ -14,7 +16,6 @@ jobs:
           - "1.20"
           - "1.21"
           - "1.22"
-    name: "Go ${{ matrix.go }} build and behavioral tests"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
@@ -25,6 +26,7 @@ jobs:
       - run: "./behavioral-tests/run.sh"
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: "Unit test and lint"
     steps:
       - uses: actions/checkout@v4
