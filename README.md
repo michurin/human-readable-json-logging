@@ -198,3 +198,7 @@ Things like that `0xc00016f0e1` get really awful.
 
 I have played with different approaches
 and decided just to split logs line by line first.
+
+## Contributors
+
+- [vitalyshatskikh](https://github.com/vitalyshatskikh)
