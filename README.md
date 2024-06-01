@@ -157,6 +157,7 @@ Text colors          Text High            Background           Hi Background    
 - Link to console control codes info
 - Write template functions guide
 - Readme: explain template functions. Show examples
+- Behavioral tests: (1) passing arguments, (2) passing signals, (3) add timeout to prevent CI hanging
 - Godoc
 
 ## Known issues
