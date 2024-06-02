@@ -141,24 +141,14 @@ func main() {
 		}
 	}()
 
-	catchSigChld := make(chan os.Signal, 1)
-	signal.Notify(catchSigChld, syscall.SIGCHLD)
-	go func() {
-		sig := <-catchSigChld
-		deb("catch signal: " + sig.String())
-		time.Sleep(time.Second) // we give a second to collect the last data; this signal obtaining from group, nor from direct child
-		rd.Close()
-	}()
+	catchSigChild(rd)
 
 	propagateSigInt := make(chan os.Signal, 1)
 	signal.Notify(propagateSigInt, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		sig := <-propagateSigInt
 		deb("propagating signal: " + sig.String())
-		err := cmd.Process.Signal(sig)
-		if err != nil {
-			printError(err)
-		}
+		signalToCmd(cmd, sig)
 		time.Sleep(time.Second)
 		sig = <-propagateSigInt
 		deb("second signal: " + sig.String())
