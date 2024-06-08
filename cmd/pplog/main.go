@@ -82,18 +82,7 @@ func showBuildInfo() {
 	fmt.Println(info.String())
 }
 
-func main() {
-	if showVersionFlag {
-		showBuildInfo()
-		return
-	}
-	if flag.NArg() < 1 {
-		fmt.Println("Usage: pplog [-d] [-v] your_command arg arg arg...")
-		return
-	}
-	args := flag.Args()[1:]
-	command := flag.Args()[0]
-
+func prepareFormatters() (func([]slogtotext.Pair) error, func([]slogtotext.Pair) error) {
 	c := sdenv.NewCollectsion()
 	c.PushStd(os.Environ())
 	envFile := lookupEnvFile()
@@ -121,6 +110,13 @@ func main() {
 	}
 	logLine = normLine(logLine)
 	errLine = normLine(errLine)
+	return slogtotext.MustFormatter(os.Stdout, logLine), slogtotext.MustFormatter(os.Stdout, errLine)
+}
+
+func runSubprocessMode() {
+	deb("run subprocess mode")
+	args := flag.Args()[1:]
+	command := flag.Args()[0]
 
 	ctx := context.Background()
 
@@ -128,8 +124,7 @@ func main() {
 
 	rd, wr := io.Pipe()
 
-	f := slogtotext.MustFormatter(os.Stdout, logLine)
-	g := slogtotext.MustFormatter(os.Stdout, errLine)
+	f, g := prepareFormatters()
 	errGrp.Go(func() error {
 		return slogtotext.Read(rd, f, g, 32768)
 	})
@@ -154,6 +149,28 @@ func main() {
 		exitCode = 1
 	}
 	os.Exit(exitCode)
+}
+
+func runPipeMode() {
+	deb("run pipe mode")
+	f, g := prepareFormatters()
+	err := slogtotext.Read(os.Stdin, f, g, 32768)
+	if err != nil {
+		printError(err)
+		return
+	}
+}
+
+func main() {
+	if showVersionFlag {
+		showBuildInfo()
+		return
+	}
+	if flag.NArg() >= 1 {
+		runSubprocessMode()
+	} else {
+		runPipeMode()
+	}
 }
 
 func printError(err error) { // TODO reconsider
