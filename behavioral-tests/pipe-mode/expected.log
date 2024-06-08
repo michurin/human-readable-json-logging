@@ -1,0 +1,3 @@
+2024-12-02T12:00:00-05:00 [INFO] OK source.file=/Users/slog/main.go source.function=main.main source.line=14 user=1
+INVALID JSON: "Broken raw error message"
+2024-12-02T12:05:00-05:00 [INFO] OK source.file=/Users/slog/main.go source.function=main.main source.line=14 user=2
