@@ -19,10 +19,22 @@ readable loglines shows up.
 go install -v github.com/michurin/human-readable-json-logging/cmd/...@latest
 ```
 
+Running in subprocess mode:
+
 ```sh
-pplog service
+pplog ./service
 # or even
 pplog go run ./cmd/service/...
+```
+
+Running in pipe mode:
+
+```sh
+./service | pplog
+# or with redirections if you need to take both stderr and stdout
+./service 2>&1 | pplog
+# or the same redirections in modern shells
+./service |& pplog
 ```
 
 ## Real life example
@@ -153,12 +165,12 @@ Text colors          Text High            Background           Hi Background    
 
 ## TODO
 
-- Show templates in debug mode
-- Link to console control codes info
-- Write template functions guide
-- Readme: explain template functions. Show examples
-- Behavioral tests: (1) passing arguments, (2) passing signals, (3) add timeout to prevent CI hanging
-- Godoc
+- Usage: show templates in debug mode
+- Docs: explain main features of binary: modes etc.
+- Docs: link to console control codes info
+- Docs: write template functions guide and examples
+- Docs: contributing guide: how to run behavior tests locally
+- Docs: godoc
 
 ## Known issues
 
