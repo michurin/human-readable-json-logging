@@ -39,7 +39,7 @@ jobs:
       - run: "go test -v -race -coverprofile=coverage.txt -covermode=atomic ./..."
         env:
           GOEXPERIMENT: nocoverageredesign
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           files: ./coverage.txt
           verbose: true
