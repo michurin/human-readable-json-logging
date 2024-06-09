@@ -43,3 +43,4 @@ jobs:
         with:
           files: ./coverage.txt
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }} # required
