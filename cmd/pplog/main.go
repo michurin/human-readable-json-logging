@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"runtime/debug"
 	"strings"
@@ -178,10 +179,29 @@ func main() {
 		showBuildInfo()
 		return
 	}
-	if flag.NArg() >= 1 {
-		runSubprocessMode()
-	} else {
-		runPipeMode()
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	done := make(chan struct{})
+	go func() {
+		if flag.NArg() >= 1 {
+			runSubprocessMode()
+		} else {
+			runPipeMode()
+		}
+		close(done)
+	}()
+
+	select {
+	case <-interrupt:
+		deb("interrupt, allow target to shutdown gracefully...")
+	case <-done:
+	}
+
+	select {
+	case <-interrupt:
+		deb("second interrupt, exit immediately")
+	case <-done:
 	}
 }
 
