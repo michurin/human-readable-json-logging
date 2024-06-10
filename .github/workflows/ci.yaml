@@ -43,3 +43,10 @@ jobs:
         with:
           files: ./coverage.txt
           verbose: true
+defaults:
+  run:
+    # NOTE: some of behavioral-tests requires tty... but
+    #
+    # GitHub Actions run without a TTY device. This is a workaround to get one,
+    # based on https://github.com/actions/runner/issues/241#issuecomment-2019042651
+    shell: 'script --return --quiet --log-out /dev/null --command "bash -e {0}"'
