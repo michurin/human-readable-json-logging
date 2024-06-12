@@ -24,6 +24,21 @@ jobs:
       - run: "go version"
       - run: "go build ./cmd/..."
       - run: "./behavioral-tests/run.sh"
+  build-windows: # TODO switch to windows-latest and run integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: "Simple build on MS Windows"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: "go version"
+      - run: "go build ./cmd/..."
+        env:
+          GOOS: windows
+          GOARCH: amd64
+      - run: "file pplog.exe"
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
