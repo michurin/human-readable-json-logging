@@ -4,7 +4,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"io"
 	"os"
@@ -15,8 +14,6 @@ import (
 
 func runSubprocessMode() {
 	deb("run subprocess mode (windows)")
-
-	ctx := context.Background()
 
 	rd, wr := io.Pipe()
 
@@ -33,7 +30,7 @@ func runSubprocessMode() {
 	args := flag.Args()[1:]
 	command := flag.Args()[0]
 
-	cmd := exec.CommandContext(ctx, command, args...)
+	cmd := exec.Command(command, args...)
 	cmd.Stdout = wr
 	cmd.Stderr = wr
 
