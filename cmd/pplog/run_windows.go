@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
@@ -18,7 +19,10 @@ func runSubprocessMode() {
 	rd, wr := io.Pipe()
 
 	f, g := prepareFormatters()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		err := slogtotext.Read(rd, f, g, 32768)
 		if err != nil {
 			deb("reader is finished with err: " + err.Error())
@@ -43,5 +47,7 @@ func runSubprocessMode() {
 	if exitCode < 0 {
 		exitCode = 1
 	}
+
+	wg.Wait() // allow reader to process records
 	os.Exit(exitCode)
 }
