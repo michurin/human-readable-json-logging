@@ -47,7 +47,7 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 		}
 		bufEnd += n
 		for bufEnd > 0 {
-			s := bytes.IndexByte(buf[:bufEnd], '\n')
+			s, sepLen := findSep(buf[:bufEnd])
 			if s < 0 {
 				if bufEnd == maxCap || noMoreData { // consider full buffer
 					line = buf[:bufEnd]
@@ -59,9 +59,9 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 			} else {
 				line = buf[:s]
 				x := make([]byte, maxCap)
-				copy(x, buf[s+1:])
+				copy(x, buf[s+sepLen:])
 				buf = x
-				bufEnd -= s + 1
+				bufEnd -= s + sepLen
 			}
 			data, ok := tryToParse(line)
 			if ok {
@@ -90,4 +90,15 @@ func Read(input io.Reader, out func([]Pair) error, outStr func([]Pair) error, ma
 		}
 	}
 	return nil
+}
+
+func findSep(buf []byte) (int, int) {
+	s := bytes.IndexByte(buf, '\n')
+	sepLen := 1
+	// line sep can be \r\n too
+	if s > 0 && buf[s-1] == '\r' {
+		s--
+		sepLen = 2
+	}
+	return s, sepLen
 }
