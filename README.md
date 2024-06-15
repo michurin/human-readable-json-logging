@@ -171,6 +171,7 @@ Text colors          Text High            Background           Hi Background    
     - `-c`
     - `PPLOG_CHILD_MODE` environment variable
     - basic `runs-on: windows-latest`
+    - passing exit code
 - Docs: explain main features of binary: modes etc.
 - Docs: link to console control codes info
 - Docs: write template functions guide and examples

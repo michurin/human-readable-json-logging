@@ -2,7 +2,7 @@
 
 xtrap() {
     echo "Getting SIGNAL $1. Exiting"
-    exit
+    exit 0
 }
 
 trap "xtrap SIGINT" 2 # graceful shutdown handler
