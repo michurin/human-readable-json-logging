@@ -164,6 +164,48 @@ Text colors          Text High            Background           Hi Background    
 \e[37mWhite  \e[0m   \e[97mWhite  \e[0m   \e[47mWhite  \e[0m   \e[107mWhite  \e[0m
 ```
 
+## Run modes explanation
+
+### Pipe mode
+
+The most confident mode. In this mode your shell cares about all your processes. Just do
+
+```sh
+./service | pplog
+# or with redirections if you need to take both stderr and stdout
+./service 2>&1 | pplog
+# or the same redirections in modern shells
+./service |& pplog
+```
+
+### Simple subprocess mode
+
+If you say just like that:
+
+```sh
+pplog ./service
+```
+
+`pplog` runs `./servcie` as a child process and tries to manage it.
+
+If you press Ctrl-C, `pplog` sends `SIGINT`, `SIGTERM`, `SIGKILL` to its child consequently with 1s delay in between.
+
+`pplog` tries to wait child process exited and returns its exit code transparently.
+
+Obvious disadvantage is that `pplog` doesn't try to manage children of child (if any), daemons etc.
+
+### Child (or coprocess) mode
+
+In this mode `pplog` starts as a child of `./service`
+
+```sh
+pplog -c ./service
+```
+
+So, `./service` itself obtains all signals and Ctrl-Cs directly.
+
+However, there are disadvantages here too. `pplog` can not get `./service`s exit code. And this mode unavailable under MS Windows.
+
 ## TODO
 
 - Usage: show templates in debug mode
@@ -189,15 +231,9 @@ local environment only, it is acceptable to have a little overhead.
 
 ### Subprocesses handling issues
 
-The problem is that many processes have to be synchronized: shell-process, pplog-process, target-process with all its children...
+The problem is that many processes have to be synchronized: shell-process, pplog-process, target-process with all its children.
 
-Long story short, the most reliable mode is pipe mode:
-
-```sh
-./service |& pplog
-```
-
-TODO: Explain subprocess-mode and child-mode (`-c`)
+You are able to choose one of three modes: pipe-, subprocess- and child-mode. Each of them has its own disadvantages.
 
 ### Line-by-line processing
 
