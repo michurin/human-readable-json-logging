@@ -20,11 +20,13 @@ import (
 var (
 	debugFlag       = false
 	showVersionFlag = false
+	childModeFlag   = false
 )
 
 func init() {
 	flag.BoolVar(&debugFlag, "d", false, "debug mode")
 	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
+	flag.BoolVar(&childModeFlag, "c", false, "child mode. pplog runs as child of target process")
 	flag.Parse()
 }
 
@@ -79,7 +81,7 @@ func showBuildInfo() {
 	fmt.Println(info.String())
 }
 
-func prepareFormatters() (func([]slogtotext.Pair) error, func([]slogtotext.Pair) error) {
+func readEnvs() (string, string, bool) {
 	c := sdenv.NewCollectsion()
 	c.PushStd(os.Environ())
 	envFile := lookupEnvFile()
@@ -97,23 +99,25 @@ func prepareFormatters() (func([]slogtotext.Pair) error, func([]slogtotext.Pair)
 
 	logLine := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}`
 	errLine := `INVALID JSON: {{ .TEXT | printf "%q" }}`
+	childMode := false
 	for _, p := range c.Collection() {
 		switch p[0] {
 		case "PPLOG_LOGLINE":
 			logLine = p[1]
 		case "PPLOG_ERRLINE":
 			errLine = p[1]
+		case "PPLOG_CHILD_MODE":
+			childMode = true
 		}
 	}
 	logLine = normLine(logLine)
 	errLine = normLine(errLine)
-	return slogtotext.MustFormatter(os.Stdout, logLine), slogtotext.MustFormatter(os.Stdout, errLine)
+	return logLine, errLine, childMode
 }
 
-func runPipeMode() {
+func runPipeMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 	deb("run pipe mode")
-	f, g := prepareFormatters()
-	err := slogtotext.Read(os.Stdin, f, g, 32768)
+	err := slogtotext.Read(os.Stdin, lineFmt, errFmt, 32768)
 	if err != nil {
 		printError(err)
 		return
@@ -121,14 +125,21 @@ func runPipeMode() {
 }
 
 func main() {
+	deb(fmt.Sprintf("flags: debug=%t, showVersion=%t, childMode=%t", debugFlag, showVersionFlag, childModeFlag))
 	if showVersionFlag {
 		showBuildInfo()
 		return
 	}
+	lineTemplate, errTemplate, childMode := readEnvs()
+	outputStream := os.Stdout // TODO make it tunable
 	if flag.NArg() >= 1 {
-		runSubprocessMode()
+		if childModeFlag || childMode {
+			runSubprocessModeChild()
+		} else {
+			runSubprocessMode(slogtotext.MustFormatter(outputStream, lineTemplate), slogtotext.MustFormatter(outputStream, errTemplate))
+		}
 	} else {
-		runPipeMode()
+		runPipeMode(slogtotext.MustFormatter(outputStream, lineTemplate), slogtotext.MustFormatter(outputStream, errTemplate))
 	}
 }
 

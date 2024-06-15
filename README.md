@@ -147,6 +147,7 @@ We makes `message` green. Keep shaping your logs field by field.
 - In `PPLOG_ERRLINE` template:
     - `TEXT`
     - `BINARY` — does TEXT contains control characters
+- If `PPLOG_CHILD_MODE` not empty `pplog` runs in child mode as if it has `-c` switch
 
 ## Most common colors
 
@@ -166,6 +167,10 @@ Text colors          Text High            Background           Hi Background    
 ## TODO
 
 - Usage: show templates in debug mode
+- Behavior tests:
+    - `-c`
+    - `PPLOG_CHILD_MODE` environment variable
+    - basic `runs-on: windows-latest`
 - Docs: explain main features of binary: modes etc.
 - Docs: link to console control codes info
 - Docs: write template functions guide and examples
@@ -180,6 +185,18 @@ If you decided to use this code as library as part of your product, you have to 
 this tool provides `io.Writer` to pipe log stream. It is easiest way to modify behavior of logger, however
 it leads to overhead for extra marshaling/unmarshaling. However, as well as we use human readable logs in
 local environment only, it is acceptable to have a little overhead.
+
+### Subprocesses handling issues
+
+The problem is that many processes have to be synchronized: shell-process, pplog-process, target-process with all its children...
+
+Long story short, the most reliable mode is pipe mode:
+
+```sh
+./service |& pplog
+```
+
+TODO: Explain subprocess-mode and child-mode (`-c`)
 
 ### Line-by-line processing
 

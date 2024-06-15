@@ -11,8 +11,8 @@ import (
 	"syscall"
 )
 
-func runSubprocessMode() {
-	deb("run subprocess mode")
+func runSubprocessModeChild() {
+	deb("run child mode")
 
 	target := flag.Args()
 	binary, err := exec.LookPath(target[0])
