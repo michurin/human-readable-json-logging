@@ -111,7 +111,7 @@ LOOP:
 				}()
 			}
 		case <-syncForceDone:
-			panic("it seems the process can not be stopped")
+			panic("it seems the process cannot be stopped")
 		}
 	}
 
