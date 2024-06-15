@@ -17,7 +17,7 @@ func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 	done := make(chan struct{})
 
 	go func() {
-		err := slogtotext.Read(rd, lineFmt, errFmt, 32768)
+		err := slogtotext.Read(rd, lineFmt, errFmt, buffSize)
 		if err != nil {
 			deb("reader is finished with err: " + err.Error())
 			return

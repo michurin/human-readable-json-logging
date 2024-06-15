@@ -17,22 +17,16 @@ import (
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
+//nolint:gochecknoglobals
 var (
 	debugFlag       = false
 	showVersionFlag = false
 	childModeFlag   = false
 )
 
-func init() {
-	flag.BoolVar(&debugFlag, "d", false, "debug mode")
-	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
-	flag.BoolVar(&childModeFlag, "c", false, "child mode. pplog runs as child of target process")
-	flag.Parse()
-}
-
 func deb(m string) {
 	if debugFlag {
-		fmt.Println("DEBUG: " + m)
+		fmt.Println("DEBUG: " + m) //nolint:forbidigo
 	}
 }
 
@@ -75,10 +69,10 @@ func normLine(t string) string {
 func showBuildInfo() {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		fmt.Println("Cannot get build info")
+		fmt.Println("Cannot get build info") //nolint:forbidigo
 		return
 	}
-	fmt.Println(info.String())
+	fmt.Println(info.String()) //nolint:forbidigo
 }
 
 func readEnvs() (string, string, bool) {
@@ -117,7 +111,7 @@ func readEnvs() (string, string, bool) {
 
 func runPipeMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 	deb("run pipe mode")
-	err := slogtotext.Read(os.Stdin, lineFmt, errFmt, 32768)
+	err := slogtotext.Read(os.Stdin, lineFmt, errFmt, buffSize)
 	if err != nil {
 		printError(err)
 		return
@@ -125,13 +119,21 @@ func runPipeMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 }
 
 func main() {
+	flag.BoolVar(&debugFlag, "d", false, "debug mode")
+	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
+	flag.BoolVar(&childModeFlag, "c", false, "child mode. pplog runs as child of target process")
+	flag.Parse()
+
 	deb(fmt.Sprintf("flags: debug=%t, showVersion=%t, childMode=%t", debugFlag, showVersionFlag, childModeFlag))
+
 	if showVersionFlag {
 		showBuildInfo()
 		return
 	}
+
 	lineTemplate, errTemplate, childMode := readEnvs()
 	outputStream := os.Stdout // TODO make it tunable
+
 	if flag.NArg() >= 1 {
 		if childModeFlag || childMode {
 			runSubprocessModeChild()
@@ -146,7 +148,7 @@ func main() {
 func printError(err error) { // TODO reconsider
 	pe := new(os.PathError)
 	if errors.As(err, &pe) {
-		if pe.Err == syscall.EBADF { // fragile code; somehow syscall.Errno.Is doesn't recognize EBADF, so we unable to use errors.As
+		if pe.Err == syscall.EBADF { //nolint:errorlint // fragile code; somehow syscall.Errno.Is doesn't recognize EBADF, so we unable to use errors.As
 			// maybe it is good idea just ignore SIGPIPE
 			fmt.Fprintf(os.Stderr, "PPLog: It seems output descriptor has been closed\n") // trying to report it to stderr
 			return
@@ -154,8 +156,8 @@ func printError(err error) { // TODO reconsider
 	}
 	xe := new(exec.ExitError)
 	if errors.As(err, &xe) {
-		fmt.Printf("exit code = %d: %s\n", xe.ExitCode(), xe.Error()) // just for information
+		fmt.Printf("exit code = %d: %s\n", xe.ExitCode(), xe.Error()) //nolint:forbidigo // just for information
 		return
 	}
-	fmt.Printf("Error: %s\n", err.Error())
+	fmt.Printf("Error: %s\n", err.Error()) //nolint:forbidigo
 }
