@@ -17,7 +17,6 @@ import (
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
-//nolint:gochecknoglobals
 var (
 	debugFlag       = false
 	showVersionFlag = false
@@ -26,7 +25,7 @@ var (
 
 func deb(m string) {
 	if debugFlag {
-		fmt.Println("DEBUG: " + m) //nolint:forbidigo
+		fmt.Println("DEBUG: " + m)
 	}
 }
 
@@ -69,10 +68,10 @@ func normLine(t string) string {
 func showBuildInfo() {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		fmt.Println("Cannot get build info") //nolint:forbidigo
+		fmt.Println("Cannot get build info")
 		return
 	}
-	fmt.Println(info.String()) //nolint:forbidigo
+	fmt.Println(info.String())
 }
 
 func readEnvs() (string, string, bool) {
@@ -148,7 +147,7 @@ func main() {
 func printError(err error) { // TODO reconsider
 	pe := new(os.PathError)
 	if errors.As(err, &pe) {
-		if pe.Err == syscall.EBADF { //nolint:errorlint // fragile code; somehow syscall.Errno.Is doesn't recognize EBADF, so we unable to use errors.As
+		if pe.Err == syscall.EBADF { // fragile code; somehow syscall.Errno.Is doesn't recognize EBADF, so we unable to use errors.As
 			// maybe it is good idea just ignore SIGPIPE
 			fmt.Fprintf(os.Stderr, "PPLog: It seems output descriptor has been closed\n") // trying to report it to stderr
 			return
@@ -156,8 +155,8 @@ func printError(err error) { // TODO reconsider
 	}
 	xe := new(exec.ExitError)
 	if errors.As(err, &xe) {
-		fmt.Printf("exit code = %d: %s\n", xe.ExitCode(), xe.Error()) //nolint:forbidigo // just for information
+		fmt.Printf("exit code = %d: %s\n", xe.ExitCode(), xe.Error()) // just for information
 		return
 	}
-	fmt.Printf("Error: %s\n", err.Error()) //nolint:forbidigo
+	fmt.Printf("Error: %s\n", err.Error())
 }
