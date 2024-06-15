@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/michurin/systemd-env-file v0.0.0-20240121081335-9bd5a321bf03
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/sync v0.6.0
 )
 
 require (
