@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -14,7 +15,7 @@ import (
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
 
-func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) { //nolint:funlen
+func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) { //nolint:funlen,cyclop // TODO split it?
 	deb("run subprocess mode")
 
 	rd, wr := io.Pipe()
@@ -51,6 +52,7 @@ func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) { //nolint
 	}()
 
 	syncTerm := make(chan os.Signal, 1)
+	countTerm := 0
 	signal.Notify(syncTerm, os.Interrupt, syscall.SIGTERM)
 
 	syncSignal := make(chan os.Signal, 1)
@@ -77,7 +79,13 @@ LOOP:
 			}
 			break LOOP
 		case sig := <-syncTerm:
-			deb("pplog gets " + sig.String())
+			countTerm++
+			deb(fmt.Sprintf("pplog gets: %s (#%d)", sig.String(), countTerm))
+			if countTerm > 1 {
+				deb("breaking loop")
+				exitCode = 1
+				break LOOP
+			}
 			syncSignal <- syscall.SIGINT
 		case sig := <-syncSignal:
 			deb("pplog sending " + sig.String() + " to subprocess")
