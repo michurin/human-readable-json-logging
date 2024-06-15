@@ -82,13 +82,26 @@ func tRemove(args ...any) []Pair {
 	return r
 }
 
+func tTrimSpace(args ...any) string {
+	r := make([]string, len(args))
+	for i, v := range args {
+		if s, ok := v.(string); ok {
+			r[i] = strings.TrimSpace(s)
+		} else {
+			r[i] = fmt.Sprintf("%#v", v)
+		}
+	}
+	return strings.Join(r, " ")
+}
+
 func Formatter(stream io.Writer, templateString string) (func([]Pair) error, error) {
 	tm, err := template.New("x").Option("missingkey=zero").Funcs(template.FuncMap{
-		"tmf":     tTimeFormatter,
-		"rm":      tRemove,
-		"rmByPfx": tRemoveByPfx,
-		"xjson":   tXJson,
-		"xxjson":  tXXJson,
+		"tmf":       tTimeFormatter,
+		"rm":        tRemove,
+		"rmByPfx":   tRemoveByPfx,
+		"xjson":     tXJson,
+		"xxjson":    tXXJson,
+		"trimSpace": tTrimSpace,
 	}).Parse(templateString)
 	if err != nil {
 		return nil, err // TODO wrap?
