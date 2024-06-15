@@ -147,6 +147,7 @@ We makes `message` green. Keep shaping your logs field by field.
 - In `PPLOG_ERRLINE` template:
     - `TEXT`
     - `BINARY` — does TEXT contains control characters
+- If `PPLOG_CHILD_MODE` not empty `pplog` runs in child mode as if it has `-c` switch
 
 ## Most common colors
 
@@ -163,9 +164,56 @@ Text colors          Text High            Background           Hi Background    
 \e[37mWhite  \e[0m   \e[97mWhite  \e[0m   \e[47mWhite  \e[0m   \e[107mWhite  \e[0m
 ```
 
+## Run modes explanation
+
+### Pipe mode
+
+The most confident mode. In this mode your shell cares about all your processes. Just do
+
+```sh
+./service | pplog
+# or with redirections if you need to take both stderr and stdout
+./service 2>&1 | pplog
+# or the same redirections in modern shells
+./service |& pplog
+```
+
+### Simple subprocess mode
+
+If you say just like that:
+
+```sh
+pplog ./service
+```
+
+`pplog` runs `./servcie` as a child process and tries to manage it.
+
+If you press Ctrl-C, `pplog` sends `SIGINT`, `SIGTERM`, `SIGKILL` to its child consequently with 1s delay in between.
+
+`pplog` tries to wait child process exited and returns its exit code transparently.
+
+Obvious disadvantage is that `pplog` doesn't try to manage children of child (if any), daemons etc.
+
+### Child (or coprocess) mode
+
+In this mode `pplog` starts as a child of `./service`
+
+```sh
+pplog -c ./service
+```
+
+So, `./service` itself obtains all signals and Ctrl-Cs directly.
+
+However, there are disadvantages here too. `pplog` can not get `./service`s exit code. And this mode unavailable under MS Windows.
+
 ## TODO
 
 - Usage: show templates in debug mode
+- Behavior tests:
+    - `-c`
+    - `PPLOG_CHILD_MODE` environment variable
+    - basic `runs-on: windows-latest`
+    - passing exit code
 - Docs: explain main features of binary: modes etc.
 - Docs: link to console control codes info
 - Docs: write template functions guide and examples
@@ -180,6 +228,12 @@ If you decided to use this code as library as part of your product, you have to 
 this tool provides `io.Writer` to pipe log stream. It is easiest way to modify behavior of logger, however
 it leads to overhead for extra marshaling/unmarshaling. However, as well as we use human readable logs in
 local environment only, it is acceptable to have a little overhead.
+
+### Subprocesses handling issues
+
+The problem is that many processes have to be synchronized: shell-process, pplog-process, target-process with all its children.
+
+You are able to choose one of three modes: pipe-, subprocess- and child-mode. Each of them has its own disadvantages.
 
 ### Line-by-line processing
 

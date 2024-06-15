@@ -20,13 +20,8 @@ import (
 var (
 	debugFlag       = false
 	showVersionFlag = false
+	childModeFlag   = false
 )
-
-func init() {
-	flag.BoolVar(&debugFlag, "d", false, "debug mode")
-	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
-	flag.Parse()
-}
 
 func deb(m string) {
 	if debugFlag {
@@ -79,7 +74,7 @@ func showBuildInfo() {
 	fmt.Println(info.String())
 }
 
-func prepareFormatters() (func([]slogtotext.Pair) error, func([]slogtotext.Pair) error) {
+func readEnvs() (string, string, bool) {
 	c := sdenv.NewCollectsion()
 	c.PushStd(os.Environ())
 	envFile := lookupEnvFile()
@@ -97,76 +92,25 @@ func prepareFormatters() (func([]slogtotext.Pair) error, func([]slogtotext.Pair)
 
 	logLine := `{{ .time }} [{{ .level }}] {{ .msg }}{{ range .ALL | rm "time" "level" "msg" }} {{.K}}={{.V}}{{end}}`
 	errLine := `INVALID JSON: {{ .TEXT | printf "%q" }}`
+	childMode := false
 	for _, p := range c.Collection() {
 		switch p[0] {
 		case "PPLOG_LOGLINE":
 			logLine = p[1]
 		case "PPLOG_ERRLINE":
 			errLine = p[1]
+		case "PPLOG_CHILD_MODE":
+			childMode = true
 		}
 	}
 	logLine = normLine(logLine)
 	errLine = normLine(errLine)
-	return slogtotext.MustFormatter(os.Stdout, logLine), slogtotext.MustFormatter(os.Stdout, errLine)
+	return logLine, errLine, childMode
 }
 
-func runSubprocessMode() {
-	deb("run subprocess mode")
-
-	target := flag.Args()
-	binary, err := exec.LookPath(target[0])
-	if err != nil {
-		panic(err)
-	}
-
-	r, w, err := os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-
-	chFiles := make([]uintptr, 3) // in, out, err
-	chFiles[0] = r.Fd()
-	chFiles[1] = os.Stdout.Fd()
-	chFiles[2] = os.Stderr.Fd()
-
-	selfBinaty, err := exec.LookPath(os.Args[0])
-	if err != nil {
-		panic(err)
-	}
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	pid, err := syscall.ForkExec(selfBinaty, os.Args[:1], &syscall.ProcAttr{
-		Dir:   cwd,
-		Env:   os.Environ(),
-		Files: chFiles,
-		Sys:   nil,
-	})
-	if err != nil {
-		panic(selfBinaty + ": " + err.Error())
-	}
-	deb(fmt.Sprintf("subprocess pid: %d", pid))
-
-	err = syscall.Dup2(int(w.Fd()), syscall.Stdout) // os.Stdout = w
-	if err != nil {
-		panic(err)
-	}
-	err = syscall.Dup2(int(w.Fd()), syscall.Stderr) // os.Stderr = w
-	if err != nil {
-		panic(err)
-	}
-
-	err = syscall.Exec(binary, target, os.Environ())
-	if err != nil {
-		panic(binary + ": " + err.Error())
-	}
-}
-
-func runPipeMode() {
+func runPipeMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 	deb("run pipe mode")
-	f, g := prepareFormatters()
-	err := slogtotext.Read(os.Stdin, f, g, 32768)
+	err := slogtotext.Read(os.Stdin, lineFmt, errFmt, buffSize)
 	if err != nil {
 		printError(err)
 		return
@@ -174,14 +118,29 @@ func runPipeMode() {
 }
 
 func main() {
+	flag.BoolVar(&debugFlag, "d", false, "debug mode")
+	flag.BoolVar(&showVersionFlag, "v", false, "show version and exit")
+	flag.BoolVar(&childModeFlag, "c", false, "child mode. pplog runs as child of target process")
+	flag.Parse()
+
+	deb(fmt.Sprintf("flags: debug=%t, showVersion=%t, childMode=%t", debugFlag, showVersionFlag, childModeFlag))
+
 	if showVersionFlag {
 		showBuildInfo()
 		return
 	}
+
+	lineTemplate, errTemplate, childMode := readEnvs()
+	outputStream := os.Stdout // TODO make it tunable
+
 	if flag.NArg() >= 1 {
-		runSubprocessMode()
+		if childModeFlag || childMode {
+			runSubprocessModeChild()
+		} else {
+			runSubprocessMode(slogtotext.MustFormatter(outputStream, lineTemplate), slogtotext.MustFormatter(outputStream, errTemplate))
+		}
 	} else {
-		runPipeMode()
+		runPipeMode(slogtotext.MustFormatter(outputStream, lineTemplate), slogtotext.MustFormatter(outputStream, errTemplate))
 	}
 }
 

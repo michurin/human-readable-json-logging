@@ -24,6 +24,33 @@ jobs:
       - run: "go version"
       - run: "go build ./cmd/..."
       - run: "./behavioral-tests/run.sh"
+  x-build-windows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: "Simple build binary for MS Windows"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: "go version"
+      - run: "go build ./cmd/..."
+        env:
+          GOOS: windows
+          GOARCH: amd64
+      - run: "file pplog.exe"
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    name: "Build on MS Windows"
+    steps:
+      - uses: actions/checkout@v4
+      - run: "go version" # go1.21.11 # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+      - run: "go build ./cmd/..."
+      - run: "dir"
+      - run: "./pplog.exe -v"
+      - shell: bash # naked `echo` won't work on windows
+        run: "./pplog.exe -d bash -c 'echo \\{\\\"time\\\":\\\"2024-12-02T12:00:00Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"Hello\\\"\\}'"
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
