@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/michurin/human-readable-json-logging/slogtotext"
 )
@@ -28,6 +29,8 @@ func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) {
 
 	args := flag.Args()[1:]
 	command := flag.Args()[0]
+
+	deb("running subprocess: " + command + " " + strings.Join(args, " "))
 
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = wr
