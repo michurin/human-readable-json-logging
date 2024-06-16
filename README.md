@@ -78,7 +78,7 @@ PPLOG_LOGLINE='
 }}\e[33m{{.K}}\e[0m={{.V}} {{ end }}
 '
 
-PPLOG_ERRLINE='{{ if .binary }}{{ .text }}{{ else }}\e[97m{{ .text }}\e[0m{{ end }}'
+PPLOG_ERRLINE='{{ if .BINARY }}{{ .TEXT }}{{ else }}\e[97m{{ .TEXT }}\e[0m{{ end }}'
 ```
 
 My original logs look like this:
@@ -109,7 +109,7 @@ Now create your first `pplog.env`. You can start from this universal one:
 
 ```sh
 PPLOG_LOGLINE='{{range .ALL}}{{.K}}={{.V}} {{end}}'
-PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+PPLOG_ERRLINE='Invalid JONS: {{.TEXT}}'
 ```
 
 You will see all your logs in KEY=VALUE format. Now look over all your keys and choose one you want
@@ -117,7 +117,7 @@ to see in the first place. Say, `message`. Modify your `pplog.env` this way:
 
 ```sh
 PPLOG_LOGLINE='{{.message}}{{range .ALL | rm "message"}} {{.K}}={{.V}}{{end}}'
-PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+PPLOG_ERRLINE='Invalid JONS: {{.TEXT}}'
 ```
 
 You will see `message` in the first place and remove it from KEY=VALUE tail.
@@ -126,15 +126,16 @@ Now, you are free to add colors:
 
 ```sh
 PPLOG_LOGLINE='\e[32m{{.message}}\e[m{{range .ALL | rm "message"}} {{.K}}={{.V}}{{end}}'
-PPLOG_ERRLINE='Invalid JONS: {{.text}}'
+PPLOG_ERRLINE='Invalid JONS: {{.TEXT}}'
 ```
 
 We makes `message` green. Keep shaping your logs field by field.
 
 ## Template functions
 
-- `tmf`
-- `rm`
+- `trimSpaces` — example: `PPLOG_ERRLINE='INVALID: {{ .TEXT | trimSpace | printf "%q" }}'`
+- `tmf` — example: `{{ .A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`
+- `rm` — example: `{{ range .ALL | rm "A" "B" "C" }}{{.K}}={{.V}};{{end}}`
 - `rmByPfx`
 - `xjson`
 - `xxjson` (experimental)
