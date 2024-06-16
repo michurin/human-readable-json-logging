@@ -78,6 +78,12 @@ func TestFormatter(t *testing.T) {
 			in:       []slogtotext.Pair{{K: "A", V: "1"}, {K: "AA", V: "11"}, {K: "B", V: "2"}, {K: "BB", V: "22"}, {K: "C", V: "3"}},
 			out:      "C=3;",
 		},
+		{
+			name:     "trim_space",
+			template: `{{.A | trimSpace}}`,
+			in:       []slogtotext.Pair{{K: "A", V: " X "}},
+			out:      `X`,
+		},
 	} {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
@@ -90,7 +96,7 @@ func TestFormatter(t *testing.T) {
 	}
 }
 
-func TestFormatterErrors(t *testing.T) {
+func TestFormatter_errors(t *testing.T) {
 	for _, cs := range []struct {
 		name     string
 		template string
@@ -138,7 +144,41 @@ func TestFormatterErrors(t *testing.T) {
 	}
 }
 
-func TestFormatterInvalidTemplate(t *testing.T) {
+func TestFormatter_invalidArgs(t *testing.T) {
+	for _, cs := range []struct {
+		name     string
+		template string
+		out      string
+	}{
+		{
+			name:     "wrong_time",
+			template: `{{ 1 | tmf "2006-01-02" "2006-01-02" }}`,
+			out:      `invalid time type: int (1)`,
+		},
+		{
+			name:     "wrong_string",
+			template: `{{ 1 | trimSpace " ok " }}`,
+			out:      `ok 1`,
+		},
+	} {
+		cs := cs
+		t.Run(cs.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			f := slogtotext.MustFormatter(buf, cs.template)
+			err := f([]slogtotext.Pair{})
+			require.NoError(t, err)
+			assert.Equal(t, cs.out, buf.String())
+		})
+	}
+}
+
+func TestFormatter_invalidFunction(t *testing.T) {
+	require.Panics(t, func() {
+		slogtotext.MustFormatter(nil, "{{ . | notExists }}")
+	})
+}
+
+func TestFormatter_invalidTemplate(t *testing.T) {
 	require.Panics(t, func() {
 		slogtotext.MustFormatter(nil, "{{")
 	})
