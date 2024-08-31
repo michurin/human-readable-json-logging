@@ -3,6 +3,7 @@ linters:
   disable:
       # depricated
     - execinquery
+    - exportloopref
       # disabled because Go version 1.21
     - copyloopvar
     - intrange
