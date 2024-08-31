@@ -49,11 +49,11 @@ func runSubprocessModeChild() {
 	}
 	deb(fmt.Sprintf("subprocess pid: %d", pid))
 
-	err = syscall.Dup2(int(w.Fd()), syscall.Stdout) // os.Stdout = w
+	err = safeDup2(w.Fd(), safeStdout) // os.Stdout = w
 	if err != nil {
 		panic(err)
 	}
-	err = syscall.Dup2(int(w.Fd()), syscall.Stderr) // os.Stderr = w
+	err = safeDup2(w.Fd(), safeStderr) // os.Stderr = w
 	if err != nil {
 		panic(err)
 	}
@@ -62,4 +62,18 @@ func runSubprocessModeChild() {
 	if err != nil {
 		panic(binary + ": " + err.Error())
 	}
+}
+
+var (
+	safeStdout = uintptr(syscall.Stdout) //nolint:gochecknoglobals
+	safeStderr = uintptr(syscall.Stderr) //nolint:gochecknoglobals
+)
+
+func safeDup2(oldfd, newfd uintptr) error {
+	// standard syscall.Dup2 is forcing us do unsafe uintptr->int->uintptr casting. It's security issue.
+	_, _, errno := syscall.Syscall(syscall.SYS_DUP2, oldfd, newfd, 0)
+	if errno != 0 {
+		return fmt.Errorf("dup2: errno: %d", errno) //nolint:errorlint
+	}
+	return nil
 }
