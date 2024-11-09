@@ -23,13 +23,13 @@ func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) { //nolint
 	done := make(chan struct{})
 
 	go func() {
+		defer close(done) // must be closed whether error or not
 		err := slogtotext.Read(rd, lineFmt, errFmt, buffSize)
 		if err != nil {
 			deb("reader is finished with err: " + err.Error())
 			return
 		}
 		deb("reader is finished")
-		close(done)
 	}()
 
 	args := flag.Args()[1:]
@@ -90,8 +90,9 @@ LOOP:
 		case sig := <-syncSignal:
 			deb("pplog sending " + sig.String() + " to subprocess")
 			err := cmd.Process.Signal(sig)
-			if err != nil {
-				panic(err) // TODO
+			if err != nil { // it seems we send signal to already dead process
+				deb("sending signal: " + sig.String() + ": " + err.Error())
+				break LOOP // the best idea?
 			}
 			switch sig {
 			case syscall.SIGINT:
@@ -116,8 +117,13 @@ LOOP:
 	}
 
 	deb("stopping reader and waiting for it")
-	_ = wr.Close() // TODO check error
-	<-done
+
+	err = wr.Close() // cause stop rendering
+	if err != nil {
+		deb("closing writer: " + err.Error())
+	}
+
+	<-done // will be closed by reader
 
 	os.Exit(exitCode)
 }
