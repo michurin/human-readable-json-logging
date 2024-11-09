@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"runtime/debug"
 	"strings"
 	"syscall"
@@ -21,11 +22,24 @@ var (
 	debugFlag       = false
 	showVersionFlag = false
 	childModeFlag   = false
+	debugFilePrefix = ""
 )
+
+func init() {
+	_, file, _, ok := runtime.Caller(0)
+	if ok {
+		debugFilePrefix = strings.TrimSuffix(file, "cmd/pplog/main.go")
+	}
+}
 
 func deb(m string) {
 	if debugFlag {
-		fmt.Println("DEBUG: " + m)
+		loc := ""
+		_, file, line, ok := runtime.Caller(1)
+		if ok {
+			loc = fmt.Sprintf(" %s:%d", strings.TrimPrefix(file, debugFilePrefix), line)
+		}
+		fmt.Println("DEBUG" + loc + ": " + m)
 	}
 }
 
