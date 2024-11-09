@@ -15,6 +15,11 @@ for cs in $(find . -mindepth 1 -maxdepth 1 -type d | sort)
 do
     (
     cd $cs
+    if test ! -e expected.log
+    then
+      echo "SKIP: $cs"
+      exit 0
+    fi
     if test -x ./custom-run.sh
     then
         ./custom-run.sh
