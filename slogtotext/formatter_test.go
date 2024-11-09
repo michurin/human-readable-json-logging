@@ -26,25 +26,25 @@ func TestFormatter(t *testing.T) {
 		},
 		{
 			name:     "simple",
-			template: "{{.A}}",
+			template: "{{ .A }}",
 			in:       []slogtotext.Pair{{K: "A", V: "1"}},
 			out:      "1",
 		},
 		{
 			name:     "simple_not_value",
-			template: "{{.A}}",
+			template: "{{ .A }}",
 			in:       []slogtotext.Pair{},
 			out:      "<no value>",
 		},
 		{
 			name:     "time_formatter",
-			template: `{{.A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05"}}`,
+			template: `{{ .A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`,
 			in:       []slogtotext.Pair{{K: "A", V: "1975-12-02T12:01:02Z"}},
 			out:      "12:01:02",
 		},
 		{
 			name:     "time_formatter_invalid",
-			template: `{{.A | tmf "2006-01-02" "2006-01-02"}}`,
+			template: `{{ .A | tmf "2006-01-02" "2006-01-02" }}`,
 			in:       []slogtotext.Pair{{K: "A", V: "1975-xii-02"}},
 			out:      `parsing time "1975-xii-02" as "2006-01-02": cannot parse "xii-02" as "01"`,
 		},
@@ -80,9 +80,15 @@ func TestFormatter(t *testing.T) {
 		},
 		{
 			name:     "trim_space",
-			template: `{{.A | trimSpace}}`,
+			template: `{{ .A | trimSpace }}`,
 			in:       []slogtotext.Pair{{K: "A", V: " X "}},
 			out:      `X`,
+		},
+		{
+			name:     "sprig_function", // just to be sure that https://masterminds.github.io/sprig/ are on
+			template: `{{ upper "hello" }}`,
+			in:       nil,
+			out:      "HELLO",
 		},
 	} {
 		cs := cs
@@ -105,32 +111,32 @@ func TestFormatter_errors(t *testing.T) {
 		{
 			name:     "range_rm_wrong_type",
 			template: `{{ range .ALL | rm "A" true }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:16: executing "x" at <rm "A" true>: error calling rm: Invalid type: idx=1: bool: true`,
+			err:      `template: base:1:16: executing "base" at <rm "A" true>: error calling rm: Invalid type: idx=1: bool: true`,
 		},
 		{
 			name:     "range_rm_wrong_input_type",
 			template: `{{ range 1 | rm "A" }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:13: executing "x" at <rm "A">: error calling rm: Invalid type: int: 1: only .ALL allows`,
+			err:      `template: base:1:13: executing "base" at <rm "A">: error calling rm: Invalid type: int: 1: only .ALL allows`,
 		},
 		{
 			name:     "range_rm_noargs",
 			template: `{{ range .ALL | rm }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:16: executing "x" at <rm>: error calling rm: Invalid number of args: 1: [[]]`,
+			err:      `template: base:1:16: executing "base" at <rm>: error calling rm: Invalid number of args: 1: [[]]`,
 		},
 		{
 			name:     "range_rm_pfx_wrong_type",
 			template: `{{ range .ALL | rmByPfx "A" true }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:16: executing "x" at <rmByPfx "A" true>: error calling rmByPfx: Invalid type: idx=1: bool: true`,
+			err:      `template: base:1:16: executing "base" at <rmByPfx "A" true>: error calling rmByPfx: Invalid type: idx=1: bool: true`,
 		},
 		{
 			name:     "range_rm_pfx_wrong_input_type",
 			template: `{{ range 1 | rmByPfx "A" }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:13: executing "x" at <rmByPfx "A">: error calling rmByPfx: Invalid type: int: 1: only .ALL allows`,
+			err:      `template: base:1:13: executing "base" at <rmByPfx "A">: error calling rmByPfx: Invalid type: int: 1: only .ALL allows`,
 		},
 		{
 			name:     "range_rm_pfx_noargs",
 			template: `{{ range .ALL | rmByPfx }}{{.K}}={{.V}};{{end}}`,
-			err:      `template: x:1:16: executing "x" at <rmByPfx>: error calling rmByPfx: Invalid number of args: 1: [[]]`,
+			err:      `template: base:1:16: executing "base" at <rmByPfx>: error calling rmByPfx: Invalid number of args: 1: [[]]`,
 		},
 	} {
 		cs := cs

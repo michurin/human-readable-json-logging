@@ -7,6 +7,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 func tTimeFormatter(from, to string, tm any) string {
@@ -95,14 +97,19 @@ func tTrimSpace(args ...any) string {
 }
 
 func Formatter(stream io.Writer, templateString string) (func([]Pair) error, error) {
-	tm, err := template.New("x").Option("missingkey=zero").Funcs(template.FuncMap{
-		"tmf":       tTimeFormatter,
-		"rm":        tRemove,
-		"rmByPfx":   tRemoveByPfx,
-		"xjson":     tXJson,
-		"xxjson":    tXXJson,
-		"trimSpace": tTrimSpace,
-	}).Parse(templateString)
+	tm, err := template.
+		New("base").
+		Option("missingkey=zero").
+		Funcs(template.FuncMap{
+			"tmf":       tTimeFormatter,
+			"rm":        tRemove,
+			"rmByPfx":   tRemoveByPfx,
+			"xjson":     tXJson,
+			"xxjson":    tXXJson,
+			"trimSpace": tTrimSpace,
+		}).
+		Funcs(sprig.FuncMap()).
+		Parse(templateString)
 	if err != nil {
 		return nil, err // TODO wrap?
 	}
