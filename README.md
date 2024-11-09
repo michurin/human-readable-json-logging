@@ -133,6 +133,7 @@ We makes `message` green. Keep shaping your logs field by field.
 
 ## Template functions
 
+- All [`Masterminds/sprig/v3` functions](https://masterminds.github.io/sprig/)
 - `trimSpaces` — example: `PPLOG_ERRLINE='INVALID: {{ .TEXT | trimSpace | printf "%q" }}'`
 - `tmf` — example: `{{ .A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`
 - `rm` — example: `{{ range .ALL | rm "A" "B" "C" }}{{.K}}={{.V}};{{end}}`
@@ -266,6 +267,14 @@ Things like that `0xc00016f0e1` get really awful.
 
 I have played with different approaches
 and decided just to split logs line by line first.
+
+### Hard to reproduce issue
+
+It seems there is a problem appears in subprocess mode when subprocess going to die and its final
+output makes error (or panic?) in `text/template` package.
+
+This issue has to be solved by [this commit](https://github.com/michurin/human-readable-json-logging/commit/c8ce47a67812e8f616b0c23a7b1abc2fced15461),
+however please report if you find how to reproduce such things.
 
 ## Contributors
 
