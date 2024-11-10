@@ -178,14 +178,28 @@ func TestFormatter_invalidArgs(t *testing.T) {
 	}
 }
 
-func TestFormatter_invalidFunction(t *testing.T) {
-	require.Panics(t, func() {
-		slogtotext.MustFormatter(nil, "{{ . | notExists }}")
-	})
-}
-
-func TestFormatter_invalidTemplate(t *testing.T) {
-	require.Panics(t, func() {
-		slogtotext.MustFormatter(nil, "{{")
-	})
+func TestMustFormatter_invalid(t *testing.T) {
+	for _, cs := range []struct {
+		name     string
+		template string
+		value    string
+	}{
+		{
+			name:     "function",
+			template: "{{ . | notExists }}",
+			value:    `template: base:1: function "notExists" not defined`,
+		},
+		{
+			name:     "template",
+			template: "{{",
+			value:    "template: base:1: unclosed action",
+		},
+	} {
+		cs := cs
+		t.Run(cs.name, func(t *testing.T) {
+			require.PanicsWithValue(t, cs.value, func() {
+				slogtotext.MustFormatter(nil, cs.template)
+			})
+		})
+	}
 }
