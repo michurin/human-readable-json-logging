@@ -3,6 +3,7 @@
 [![build](https://github.com/michurin/human-readable-json-logging/actions/workflows/ci.yaml/badge.svg)](https://github.com/michurin/human-readable-json-logging/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/michurin/human-readable-json-logging/graph/badge.svg?token=LDYMK3ZM06)](https://codecov.io/gh/michurin/human-readable-json-logging)
 [![Go Report Card](https://goreportcard.com/badge/github.com/michurin/human-readable-json-logging)](https://goreportcard.com/report/github.com/michurin/human-readable-json-logging)
+[![Go Reference](https://pkg.go.dev/badge/github.com/michurin/human-readable-json-logging.svg)](https://pkg.go.dev/github.com/michurin/human-readable-json-logging/slogtotext)
 
 It is library and binary CLI tool to make JSON logs readable including colorizing.
 The formatting is based on standard goland templating engine [text/template](https://pkg.go.dev/text/template).
