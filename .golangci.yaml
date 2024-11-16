@@ -2,14 +2,12 @@ linters:
   enable-all: true
   disable:
       # depricated
-    - execinquery
     - exportloopref
       # disabled because Go version 1.21
     - copyloopvar
     - intrange
       # too hard
     - varnamelen
-    - gomnd
     - nlreturn
     - testpackage
     - depguard
