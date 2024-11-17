@@ -209,6 +209,13 @@ So, `./service` itself obtains all signals and Ctrl-Cs directly.
 
 However, there are disadvantages here too. `pplog` can not get `./service`s exit code. And this mode unavailable under MS Windows.
 
+## Similar projects
+
+- `jlv` (JSON Log Viewer) — [https://github.com/hedhyw/json-log-viewer](https://github.com/hedhyw/json-log-viewer)
+- `logdy` — [https://logdy.dev/](https://logdy.dev/)
+- `humanlog` — [https://humanlog.io/](https://humanlog.io/), [https://github.com/humanlogio/humanlog](https://github.com/humanlogio/humanlog)
+- `jq` — `echo '{"time":"12:00","msg":"OK"}' | jq -r '.time+" "+.msg'` produces `12:00 OK` — [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
+
 ## TODO
 
 - Usage: show templates in debug mode
@@ -217,9 +224,6 @@ However, there are disadvantages here too. `pplog` can not get `./service`s exit
     - `PPLOG_CHILD_MODE` environment variable
     - basic `runs-on: windows-latest`
     - passing exit code
-- Docs: explain main features of binary: modes etc.
-- Docs: link to console control codes info
-- Docs: write template functions guide and examples
 - Docs: contributing guide: how to run behavior tests locally
 - Docs: godoc
 
