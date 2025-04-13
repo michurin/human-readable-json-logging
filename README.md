@@ -94,6 +94,34 @@ It turns to:
 I 07:33:44 5787 rpc.booking xxx.xx/service-booking/internal/rpc/booking.(*Handler).Handle.func1 39 RPC call payload_req={"userId":34664834} payload_resp={"provider":"None"}
 ```
 
+## One more example: settings for gRPC+slog out of the box logging
+
+Basic settings for [github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging](https://github.com/grpc-ecosystem/go-grpc-middleware/) logs.
+
+```
+# file: pplog.env
+
+PPLOG_LOGLINE='
+{{- .time | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}{{" "}}
+{{- if .level }}
+  {{- if eq .level "DEBUG"}}\e[90m
+  {{- else if eq .level "INFO" }}\e[32m
+  {{- else}}\e[91m
+  {{- end }}
+  {{- .level }}\e[0m
+{{- end }}{{" "}}
+{{- if (index . "grpc.code") }}
+  {{- if eq "OK" (index . "grpc.code") }}\e[32mOK\e[0m {{else}}\e[91m{{ index . "grpc.code" }}\e[0m {{ end }}
+{{- else -}}
+  {{"- "}}
+{{- end -}}
+\e[35m{{ index . "grpc.component" }}/\e[95m{{ index . "grpc.service" }}\e[35m/{{ index . "grpc.method" }}\e[0m{{" "}}
+{{- .msg }}
+{{- range .ALL | rm "msg" "time" "level" "grpc.component" "grpc.service" "grpc.method" "grpc.code"}} \e[33m{{.K}}\e[0m={{.V}}{{end}}'
+
+PPLOG_ERRLINE='{{ if .BINARY }}{{ .TEXT }}{{ else }}\e[97m{{.TEXT}}\e[0m{{ end }}'
+```
+
 ## Step by step customization
 
 First things first, I recommend you to prepare small file with your logs. Let's name it `example.log`.
