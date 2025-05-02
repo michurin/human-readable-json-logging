@@ -1,48 +1,77 @@
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-      # depricated
-    - exportloopref
-      # disabled because Go version 1.21
     - copyloopvar
-    - intrange
-      # too hard
-    - varnamelen
-    - nlreturn
-    - testpackage
-    - depguard
-    - wsl
-      # would be nice to turn on
-    - wastedassign
-    - tparallel
-    - wrapcheck
-    - paralleltest
     - err113
     - godox
-
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/michurin/human-readable-json-logging)
-  lll: {line-length: 160}
-  funlen: {lines: 70}
-  cyclop: {max-complexity: 15}
-  gocognit:
-    min-complexity: 40 # 10-20 recommended
-
-issues:
-  exclude-rules:
-    - path: cmd/pplog/main.go
-      linters:
-      - gochecknoglobals
-      - gochecknoinits
-      - forbidigo
-      - funlen
-      - dupword
-      - errorlint
-      - mnd
-    - path: slogtotext/example_slog_test.go
-      linters:
-      - exhaustruct
+    - intrange
+    - nlreturn
+    - paralleltest
+    - revive
+    - testpackage
+    - tparallel
+    - varnamelen
+    - wastedassign
+    - wrapcheck
+    - wsl
+  settings:
+    cyclop:
+      max-complexity: 15
+    funlen:
+      lines: 70
+    gocognit:
+      min-complexity: 40
+    lll:
+      line-length: 160
+    gosec:
+      excludes:
+        - G204 # Subprocess launched with variable
+        - G304 # Potential file inclusion via variable
+    depguard:
+      rules:
+        regular:
+          files:
+            - !$test
+          allow:
+            - $gostd
+            - github.com/michurin/human-readable-json-logging/slogtotext
+            - github.com/Masterminds/sprig/v3
+        tests:
+          files:
+            - $test
+          allow:
+            - $gostd
+            - github.com/michurin/human-readable-json-logging/slogtotext
+            - github.com/stretchr/testify
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupword
+          - errorlint
+          - forbidigo
+          - funlen
+          - gochecknoglobals
+          - gochecknoinits
+          - mnd
+        path: cmd/pplog/main.go
+      - linters:
+          - exhaustruct
+        path: slogtotext/example_slog_test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/michurin/human-readable-json-logging)
