@@ -46,8 +46,10 @@ linters:
             - github.com/stretchr/testify
   exclusions:
     generated: lax
+    warn-unused: true
     rules:
-      - linters:
+      - path: cmd/pplog/main.go
+        linters:
           - dupword
           - errorlint
           - forbidigo
@@ -55,14 +57,9 @@ linters:
           - gochecknoglobals
           - gochecknoinits
           - mnd
-        path: cmd/pplog/main.go
-      - linters:
+      - path: slogtotext/example_slog_test.go
+        linters:
           - exhaustruct
-        path: slogtotext/example_slog_test.go
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
 formatters:
   enable:
     - gci
