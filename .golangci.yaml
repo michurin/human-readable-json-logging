@@ -15,6 +15,7 @@ linters:
     - wastedassign
     - wrapcheck
     - wsl
+    - wsl_v5
   settings:
     cyclop:
       max-complexity: 15
