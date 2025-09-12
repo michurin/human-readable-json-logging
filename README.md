@@ -244,6 +244,34 @@ However, there are disadvantages here too. `pplog` can not get `./service`s exit
 - `humanlog` — [https://humanlog.io/](https://humanlog.io/), [https://github.com/humanlogio/humanlog](https://github.com/humanlogio/humanlog)
 - `jq` — `echo '{"time":"12:00","msg":"OK"}' | jq -r '.time+" "+.msg'` produces `12:00 OK` — [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
 
+In fact, `jq` is really great. If you are brave enough, you can dive into things like that:
+
+```sh
+cat log
+```
+
+Log file content:
+
+```
+{"msg": "ok1", "id": 1}
+INV
+{"msg": "ok2", "id": 2, "opt": "HERE"}
+```
+
+Formatting, using `jq`:
+
+```sh
+cat log | jq -rR '. as $line | try ( fromjson | "\u001b[92m\(.msg)\u001b[m \(.id) \(.opt // "-")" ) catch "\u001b[1mInvalid JSON: \u001b[31m\($line)\u001b[m"'
+```
+
+The output will be colored:
+
+```
+ok1 1 -
+Invalid JSON: INV
+ok2 2 HERE
+```
+
 ## TODO
 
 - Usage: show templates in debug mode
