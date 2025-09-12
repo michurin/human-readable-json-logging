@@ -291,7 +291,7 @@ as well as it won't work with mixed lines like this:
 Raw message{"message": "valid json log record"}
 ```
 
-all that cases will be considered and output as wrong JSON.
+all that cases will be considered and reported as wrong JSON.
 
 Honestly, I have tried to implement smarter scanner. It's not a big deal, however,
 in fact, it is not convenient. For instance, it consider message like this `code=200`
