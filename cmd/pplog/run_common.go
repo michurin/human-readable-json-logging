@@ -37,7 +37,7 @@ func runSubprocessMode(lineFmt, errFmt func([]slogtotext.Pair) error) { //nolint
 
 	deb("running subprocess: " + command + " " + strings.Join(args, " "))
 
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command(command, args...) //nolint:noctx
 	cmd.Stdout = wr
 	cmd.Stderr = wr
 
