@@ -1,10 +1,12 @@
 package slogtotext
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"text/template"
 	"time"
 
@@ -96,17 +98,47 @@ func tTrimSpace(args ...any) string {
 	return strings.Join(r, " ")
 }
 
+func tSkipLineIf(x *atomic.Bool, xor bool) func(args ...any) string {
+	return func(args ...any) string {
+		f := false
+		for _, v := range args {
+			switch x := v.(type) {
+			case bool:
+				if x {
+					f = true
+				}
+			case string:
+				if len(x) > 0 {
+					f = true
+				}
+			case int:
+				if x != 0 {
+					f = true
+				}
+			}
+			if f {
+				break
+			}
+		}
+		x.Store(f != xor) // xor operation
+		return ""
+	}
+}
+
 func Formatter(stream io.Writer, templateString string) (func([]Pair) error, error) {
+	flag := new(atomic.Bool)
 	tm, err := template.
 		New("base").
 		Option("missingkey=zero").
 		Funcs(template.FuncMap{
-			"tmf":       tTimeFormatter,
-			"rm":        tRemove,
-			"rmByPfx":   tRemoveByPfx,
-			"xjson":     tXJson,
-			"xxjson":    tXXJson,
-			"trimSpace": tTrimSpace,
+			"tmf":            tTimeFormatter,
+			"rm":             tRemove,
+			"rmByPfx":        tRemoveByPfx,
+			"xjson":          tXJson,
+			"xxjson":         tXXJson,
+			"trimSpace":      tTrimSpace,
+			"skipLineIf":     tSkipLineIf(flag, false),
+			"skipLineUnless": tSkipLineIf(flag, true),
 		}).
 		Funcs(sprig.FuncMap()).
 		Parse(templateString)
@@ -127,9 +159,16 @@ func Formatter(stream io.Writer, templateString string) (func([]Pair) error, err
 		}
 		sort.Slice(q, func(i, j int) bool { return q[i].K < q[j].K })
 		kv[allKey] = q
-		err := tm.Execute(stream, kv)
+		buff := new(bytes.Buffer)
+		err := tm.Execute(buff, kv)
 		if err != nil {
 			return err // TODO wrap error?
+		}
+		if !flag.Load() {
+			_, err = io.Copy(stream, buff)
+			if err != nil {
+				return err // TODO wrap error?
+			}
 		}
 		return nil
 	}, nil
