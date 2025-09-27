@@ -85,6 +85,36 @@ func TestFormatter(t *testing.T) {
 			out:      `X`,
 		},
 		{
+			name:     "skip_string_true",
+			template: `{{ skipLineUnless .A }}{{ .M }}`,
+			in:       []slogtotext.Pair{{K: "A", V: "not empty"}, {K: "M", V: "x"}},
+			out:      `x`,
+		},
+		{
+			name:     "skip_string_false",
+			template: `{{ skipLineUnless .A }}{{ .M }}`,
+			in:       []slogtotext.Pair{{K: "A", V: ""}, {K: "M", V: "x"}},
+			out:      ``,
+		},
+		{
+			name:     "skip_int_true",
+			template: `{{ skipLineUnless (len .A) }}{{ .M }}`,
+			in:       []slogtotext.Pair{{K: "A", V: "string"}, {K: "M", V: "x"}},
+			out:      `x`,
+		},
+		{
+			name:     "skip_int_false",
+			template: `{{ skipLineUnless (len .A) }}{{ .M }}`,
+			in:       []slogtotext.Pair{{K: "A", V: ""}, {K: "M", V: "x"}},
+			out:      ``,
+		},
+		{
+			name:     "skip_bool_true",
+			template: `{{ skipLineIf (eq 0 (len .A)) }}{{ .M }}`,
+			in:       []slogtotext.Pair{{K: "A", V: ""}, {K: "M", V: "x"}},
+			out:      ``,
+		},
+		{
 			name:     "sprig_function", // just to be sure that https://masterminds.github.io/sprig/ are on
 			template: `{{ upper "hello" }}`,
 			in:       nil,
