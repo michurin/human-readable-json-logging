@@ -169,6 +169,8 @@ We makes `message` green. Keep shaping your logs field by field.
 - `rmByPfx`
 - `xjson`
 - `xxjson` (experimental)
+- `skipLineIf` — evaluates to empty string, however has side effect: if one of arguments is true, or nonempty string or nonzero integer the line will be skipped and won't appear in output (see [discussion](https://github.com/michurin/human-readable-json-logging/issues/20) and [comment](https://github.com/michurin/human-readable-json-logging/pull/21))
+- `skipLineUnless` — inverted `skipLineIf`, example: `PPLOG_ERRLINE='{{ skipLineUnless .TEXT }}Invalid JONS: {{ .TEXT }}'` — it skips empty lines
 
 ## Template special variables
 
