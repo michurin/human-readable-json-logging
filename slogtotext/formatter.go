@@ -104,17 +104,11 @@ func tSkipLineIf(x *atomic.Bool, xor bool) func(args ...any) string {
 		for _, v := range args {
 			switch x := v.(type) {
 			case bool:
-				if x {
-					f = true
-				}
+				f = f || x
 			case string:
-				if len(x) > 0 {
-					f = true
-				}
+				f = f || (len(x) > 0)
 			case int:
-				if x != 0 {
-					f = true
-				}
+				f = f || (x != 0)
 			}
 			if f {
 				break
