@@ -2,6 +2,7 @@ package slogtotext
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -13,16 +14,34 @@ import (
 	"github.com/Masterminds/sprig/v3"
 )
 
-func tTimeFormatter(from, to string, tm any) string {
-	ts, ok := tm.(string)
-	if !ok {
-		return fmt.Sprintf("invalid time type: %[1]T (%[1]v)", tm)
+func tTimeFormatter(args ...any) string {
+	// args: fromFormat1, fromFormat2, ... toFormat, timeString
+	if len(args) < 3 { //nolint:mnd
+		return fmt.Sprintf("Too few arguments: %d", len(args))
 	}
-	t, err := time.Parse(from, ts)
-	if err != nil {
-		return err.Error()
+	sa := make([]string, len(args))
+	for i, v := range args {
+		var ok bool
+		sa[i], ok = v.(string)
+		if !ok {
+			return fmt.Sprintf("Invalid type: pos=%[1]d: %[2]T (%[2]v)", i+1, v)
+		}
 	}
-	return t.Format(to)
+	tm := sa[len(sa)-1] // the last argument is timeString
+	tf := sa[len(sa)-2] // the before last argument is target format
+	sa = sa[:len(sa)-2] // source formats to try
+	for _, v := range sa {
+		t, err := time.Parse(v, tm)
+		if err != nil {
+			e := new(time.ParseError)
+			if errors.As(err, &e) {
+				continue
+			}
+			return err.Error() // in fact, it is impossible case, time.Parse always returns *time.ParseError
+		}
+		return t.Format(tf)
+	}
+	return tm // return original time as fallback
 }
 
 func tRemoveByPfx(args ...any) []Pair { // TODO naive nested loop implementation
