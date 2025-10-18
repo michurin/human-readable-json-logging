@@ -245,6 +245,7 @@ However, there are disadvantages here too. `pplog` can not get `./service`s exit
 - `logdy` — [https://logdy.dev/](https://logdy.dev/)
 - `humanlog` — [https://humanlog.io/](https://humanlog.io/), [https://github.com/humanlogio/humanlog](https://github.com/humanlogio/humanlog)
 - `jq` — `echo '{"time":"12:00","msg":"OK"}' | jq -r '.time+" "+.msg'` produces `12:00 OK` — [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
+- `grc/grcat` — [https://github.com/garabik/grc](https://github.com/garabik/grc)
 
 In fact, `jq` is really great. If you are brave enough, you can dive into things like that:
 
