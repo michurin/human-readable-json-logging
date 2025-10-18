@@ -164,7 +164,7 @@ We makes `message` green. Keep shaping your logs field by field.
 
 - All [`Masterminds/sprig/v3` functions](https://masterminds.github.io/sprig/)
 - `trimSpace` — example: `PPLOG_ERRLINE='INVALID: {{ .TEXT | trimSpace | printf "%q" }}'`
-- `tmf` — example: `{{ .A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`
+- `tmf` — example: `{{ .A | tmf "2006-01-02T15:04:05Z07:00" "15:04:05" }}`. It is possible to specify number of alternative input formats: `tmf "inpfmt1" "inpfmt2" ... "outfmt"`. The first appropriate input format will be taken.
 - `rm` — example: `{{ range .ALL | rm "A" "B" "C" }}{{.K}}={{.V}};{{end}}`
 - `rmByPfx`
 - `xjson`

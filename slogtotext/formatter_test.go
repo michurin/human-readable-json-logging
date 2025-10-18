@@ -43,10 +43,22 @@ func TestFormatter(t *testing.T) {
 			out:      "12:01:02",
 		},
 		{
-			name:     "time_formatter_invalid",
+			name:     "time_formatter_skip_format",
+			template: `{{ .A | tmf "Z07:00" "2006-01-02T15:04:05Z07:00" "15:04:05" }}`,
+			in:       []slogtotext.Pair{{K: "A", V: "1975-12-02T12:01:02Z"}},
+			out:      "12:01:02",
+		},
+		{
+			name:     "time_formatter_too_few_args",
+			template: `{{ .A | tmf "xxx" }}`,
+			in:       []slogtotext.Pair{{K: "A", V: "1975-12-02T12:01:02Z"}},
+			out:      "Too few arguments: 2",
+		},
+		{
+			name:     "time_formatter_invalid_fallback",
 			template: `{{ .A | tmf "2006-01-02" "2006-01-02" }}`,
 			in:       []slogtotext.Pair{{K: "A", V: "1975-xii-02"}},
-			out:      `parsing time "1975-xii-02" as "2006-01-02": cannot parse "xii-02" as "01"`,
+			out:      `1975-xii-02`,
 		},
 		{
 			name:     "range",
@@ -189,7 +201,7 @@ func TestFormatter_invalidArgs(t *testing.T) {
 		{
 			name:     "wrong_time",
 			template: `{{ 1 | tmf "2006-01-02" "2006-01-02" }}`,
-			out:      `invalid time type: int (1)`,
+			out:      `Invalid type: pos=3: int (1)`,
 		},
 		{
 			name:     "wrong_string",
