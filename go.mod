@@ -4,8 +4,8 @@ go 1.21
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/michurin/systemd-env-file v0.0.0-20250315054830-e401e91b6fe4
-	github.com/stretchr/testify v1.10.0
+	github.com/michurin/systemd-env-file v0.0.0-20250606021327-1e826f3c7c79
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
