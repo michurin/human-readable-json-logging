@@ -11,7 +11,6 @@ linters:
     - revive
     - testpackage
     - tparallel
-    - varnamelen
     - wastedassign
     - wrapcheck
     - wsl
@@ -45,6 +44,9 @@ linters:
             - $gostd
             - github.com/michurin/human-readable-json-logging/slogtotext
             - github.com/stretchr/testify
+    varnamelen:
+      min-name-length: 2
+      max-distance: 36
   exclusions:
     generated: lax
     warn-unused: true
