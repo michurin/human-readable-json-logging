@@ -16,9 +16,10 @@ jobs:
           - "1.23"
           - "1.24"
           - "1.25"
+          - "1.26"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: "${{ matrix.go }}"
       - run: "go version"
@@ -29,8 +30,8 @@ jobs:
     timeout-minutes: 10
     name: "Simple build binary for MS Windows"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25"
       - run: "go version"
@@ -44,7 +45,7 @@ jobs:
     timeout-minutes: 10
     name: "Build on MS Windows"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: "go version" # go1.21.11 # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
       - run: "go build ./cmd/..."
       - run: "dir"
@@ -56,18 +57,18 @@ jobs:
     timeout-minutes: 10
     name: "Unit test and lint"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25"
-      - uses: golangci/golangci-lint-action@v7
+      - uses: golangci/golangci-lint-action@v9
         with:
-          version: "v2.7.1"
+          version: "v2.12.2"
       - run: "go test -v -race -coverprofile=coverage.txt -covermode=atomic ./..."
       - run: "grep -v '^github.com/michurin/human-readable-json-logging/cmd/pplog/' coverage.txt >coverage.tmp"
       - run: "rm coverage.txt"
       - run: "mv coverage.tmp coverage.txt"
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           files: ./coverage.txt
           verbose: true

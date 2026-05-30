@@ -5,6 +5,7 @@ linters:
     - copyloopvar
     - err113
     - godox
+    - gomodguard
     - intrange
     - nlreturn
     - paralleltest
@@ -22,12 +23,15 @@ linters:
       lines: 70
     gocognit:
       min-complexity: 40
+    goconst:
+      ignore-string-values: ["true", "false", "NOKEY"]
     lll:
       line-length: 160
     gosec:
       excludes:
         - G204 # Subprocess launched with variable
         - G304 # Potential file inclusion via variable
+        - G702 # Command injection via taint analysis
     depguard:
       rules:
         regular:
@@ -63,6 +67,9 @@ linters:
       - path: slogtotext/example_slog_test.go
         linters:
           - exhaustruct
+      - path: slogtotext/formatter_test.go
+        linters:
+          - goconst
 formatters:
   enable:
     - gci
