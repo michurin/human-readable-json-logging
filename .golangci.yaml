@@ -4,6 +4,7 @@ linters:
   disable:
     - copyloopvar
     - err113
+    - exhaustruct
     - godox
     - gomodguard
     - intrange
@@ -66,7 +67,7 @@ linters:
           - mnd
       - path: slogtotext/example_slog_test.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: slogtotext/formatter_test.go
         linters:
           - goconst

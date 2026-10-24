@@ -133,7 +133,6 @@ func TestFormatter(t *testing.T) {
 			out:      "HELLO",
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			f := slogtotext.MustFormatter(buf, cs.template)
@@ -181,7 +180,6 @@ func TestFormatter_errors(t *testing.T) {
 			err:      `template: base:1:16: executing "base" at <rmByPfx>: error calling rmByPfx: Invalid number of args: 1: [[]]`,
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			f := slogtotext.MustFormatter(buf, cs.template)
@@ -209,7 +207,6 @@ func TestFormatter_invalidArgs(t *testing.T) {
 			out:      `ok 1`,
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			f := slogtotext.MustFormatter(buf, cs.template)
@@ -237,7 +234,6 @@ func TestMustFormatter_invalid(t *testing.T) {
 			value:    "template: base:1: unclosed action",
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			require.PanicsWithValue(t, cs.value, func() {
 				slogtotext.MustFormatter(nil, cs.template)

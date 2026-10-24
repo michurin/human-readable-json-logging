@@ -51,7 +51,7 @@ func tRemoveByPfx(args ...any) []Pair { // TODO naive nested loop implementation
 	}
 	c := make([]string, nLast)
 	ok := false
-	for i := 0; i < nLast; i++ {
+	for i := range nLast {
 		c[i], ok = args[i].(string)
 		if !ok {
 			panic(fmt.Sprintf("Invalid type: idx=%[1]d: %[2]T: %[2]v", i, args[i]))
@@ -84,7 +84,7 @@ func tRemove(args ...any) []Pair {
 		panic(fmt.Sprintf("Invalid number of args: %d: %v", len(args), args))
 	}
 	c := make(map[string]struct{}, nLast)
-	for i := 0; i < nLast; i++ {
+	for i := range nLast {
 		s, ok := args[i].(string)
 		if !ok {
 			panic(fmt.Sprintf("Invalid type: idx=%[1]d: %[2]T: %[2]v", i, args[i]))

@@ -59,7 +59,6 @@ func TestReader(t *testing.T) {
 		{name: "valid_but_too_long", in: `{"a":"123"}`, exp: `"{\"a\":\"123\"" ("")|"}" ("")`},
 		{name: "valid_but_too_long_and_ok", in: `{"a":"123"}` + "\n" + `{"a":1}`, exp: `"{\"a\":\"123\"" ("")|"}" ("")|a=1 RAW_INPUT={"a":1}`},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			buf := strings.NewReader(cs.in)
 			f, g, c := collector(t)

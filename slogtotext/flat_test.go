@@ -45,7 +45,6 @@ func TestFlat(t *testing.T) {
 			{"d", "true"},
 		},
 	}} {
-		cs := cs
 		t.Run(fmt.Sprintf("test_%d", i), func(t *testing.T) {
 			t.Parallel()
 			d := json.NewDecoder(strings.NewReader(cs.in))
